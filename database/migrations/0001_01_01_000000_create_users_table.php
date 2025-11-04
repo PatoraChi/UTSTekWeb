@@ -17,9 +17,16 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // Tambahan baru:
+            $table->enum('role', ['user', 'admin', 'super_admin', 'owner'])->default('user');
+            $table->boolean('is_banned')->default(false);
+            $table->timestamp('banned_until')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });
+
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

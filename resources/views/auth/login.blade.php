@@ -26,9 +26,13 @@
         <div class="col-md-6 d-flex align-items-center justify-content-center">
             <div class="login-box p-5 rounded shadow">
                 <h3 class="text-center mb-4 fw-bold text-light">LahIya</h3>
-
+                    @if (session('error'))
+                    <div class="alert alert-danger text-center">
+                        {{ session('error') }}
+                    </div>
+                    @endif
                 <!-- Form Login -->
-                <form action="#" method="POST">
+                <form action="{{ url('/login') }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <label for="email" class="form-label text-light">Email atau Username</label>

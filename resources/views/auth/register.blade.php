@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LahIya | Buat Akun</title>
+    <title>LahIya | Daftar Akun</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,26 +18,41 @@
     <div class="row vh-100">
         <!-- Gambar di kiri -->
         <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-dark">
-            <img src="https://images.unsplash.com/photo-1525182008055-f88b95ff7980?w=600"
+            <img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=600"
                  alt="register illustration" class="img-fluid rounded-3 shadow-lg" style="max-height: 80%;">
         </div>
 
         <!-- Form Register di kanan -->
         <div class="col-md-6 d-flex align-items-center justify-content-center">
             <div class="login-box p-5 rounded shadow">
+
                 <h3 class="text-center mb-4 fw-bold text-light">Buat Akun LahIya</h3>
 
+                <!-- Notifikasi -->
+                @if (session('success'))
+                    <div class="alert alert-success text-center">{{ session('success') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <!-- Form Register -->
-                <form action="#" method="POST">
+                <form action="{{ url('/register') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label for="username" class="form-label text-light">Username</label>
-                        <input type="text" id="username" name="username" class="form-control bg-dark text-light border-secondary" placeholder="Masukkan username" required>
+                        <label for="name" class="form-label text-light">Nama Lengkap</label>
+                        <input type="text" id="name" name="name" class="form-control bg-dark text-light border-secondary" placeholder="Masukkan nama lengkap" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="email" class="form-label text-light">Email</label>
-                        <input type="email" id="email" name="email" class="form-control bg-dark text-light border-secondary" placeholder="Masukkan email aktif" required>
+                        <input type="email" id="email" name="email" class="form-control bg-dark text-light border-secondary" placeholder="Masukkan email" required>
                     </div>
 
                     <div class="mb-3">
@@ -46,8 +61,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="confirm_password" class="form-label text-light">Ulangi Kata Sandi</label>
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-control bg-dark text-light border-secondary" placeholder="Ketik ulang kata sandi" required>
+                        <label for="password_confirmation" class="form-label text-light">Konfirmasi Kata Sandi</label>
+                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control bg-dark text-light border-secondary" placeholder="Ulangi kata sandi" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 mb-3">Daftar</button>
@@ -58,6 +73,7 @@
                         </p>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>

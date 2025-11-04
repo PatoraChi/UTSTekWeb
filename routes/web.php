@@ -1,31 +1,90 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use App\Models\User;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Semua route tampilan dan logika sederhana untuk aplikasi LahIya.
-| (versi simulasi tanpa database)
-|
-*/
 
-// Default halaman (langsung arahkan ke login)
+// 🏠 Halaman utama (dashboard setelah login)
 Route::get('/', function () {
+    if (!Session::has('user')) {
+        return redirect('/login');
+    }
+    return view('home'); // ini file home.blade.php kamu
+});
+
+// 🔐 Halaman login (GET)
+Route::get('/login', function () {
+    // Kalau sudah login, langsung ke home
+    if (Session::has('user')) {
+        return redirect('/');
+    }
+    return view('auth.login');
+})->name('login');
+
+// 🔐 Proses login (POST)
+Route::post('/login', function (Request $request) {
+    $request->validate([
+        'email' => 'required',
+        'password' => 'required',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return back()->with('error', 'Email tidak ditemukan.');
+    }
+
+    if (!Hash::check($request->password, $user->password)) {
+        return back()->with('error', 'Password salah.');
+    }
+
+    if ($user->is_banned ?? false) {
+        return back()->with('error', 'Akun Anda diblokir.');
+    }
+
+    // Simpan session user
+    Session::put('user', [
+        'id' => $user->id,
+        'name' => $user->name,
+        'role' => $user->role,
+    ]);
+
+    return redirect('/'); // langsung ke home
+});
+
+// 🧾 Logout
+Route::get('/logout', function () {
+    Session::forget('user');
     return redirect('/login');
 });
 
-// --------------------
-//  AUTH PAGES
-// --------------------
+// 📝 Register (GET)
+Route::get('/register', function () {
+    return view('auth.register');
+});
 
-// Halaman login
-Route::get('/login', fn() => view('auth.login'));
+// 📝 Register (POST)
+Route::post('/register', function (Illuminate\Http\Request $request) {
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|min:6|confirmed',
+    ]);
 
-// Halaman register
-Route::get('/register', fn() => view('auth.register'));
+    \App\Models\User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+        'role' => 'user', // default user
+    ]);
+
+    return redirect('/login')->with('success', 'Akun berhasil dibuat! Silakan login.');
+});
+
+
 
 // --------------------
 //  LUPA PASSWORD FLOW
