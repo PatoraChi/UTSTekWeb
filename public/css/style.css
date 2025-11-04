@@ -1,0 +1,95 @@
+body {
+    background-color: #121212;
+    color: #f8f9fa;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100vh;
+    width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #0d0f10;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #2c2f33;
+}
+
+.sidebar h3 {
+    color: #fff;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.sidebar a {
+    color: #ddd;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin: 3px 8px;
+    transition: all 0.2s ease;
+    font-size: 15px;
+}
+
+.sidebar a i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.sidebar a:hover, 
+.sidebar a.active {
+    background-color: #2c2f33;
+    color: #fff;
+}
+
+/* Navbar */
+.navbar-custom {
+    background-color: #0d0f10;
+    border-bottom: 1px solid #2c2f33;
+    height: 60px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 220px;
+    right: 0;
+    padding-right: 20px;
+    z-index: 10;
+}
+
+.profile-img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Konten Utama */
+.main-content {
+    margin-left: 220px;
+    margin-top: 60px;
+    padding: 20px;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .navbar-custom {
+        left: 0;
+    }
+    .main-content {
+        margin: 0;
+    }
+}
