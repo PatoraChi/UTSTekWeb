@@ -5,7 +5,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use App\Models\User;
-
+use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\VerifyCodeController;
+use App\Http\Controllers\ResetPasswordController;
 
 // 🏠 Halaman utama (dashboard setelah login)
 Route::get('/', function () {
@@ -102,9 +106,9 @@ Route::post('/forgot-password', function () {
 
     // Simpan email dan kode ke session sementara
     session(['reset_email' => $email, 'reset_code' => $code]);
-
-    // (Untuk debug, tampilkan kode di console)
     logger("Kode verifikasi untuk {$email}: {$code}");
+    // (Untuk debug, tampilkan kode di console)
+    Mail::to($email)->send(new OtpMail($code));
 
     // Arahkan ke halaman verifikasi
     return redirect('/verify-token');
@@ -115,21 +119,31 @@ Route::post('/forgot-password', function () {
 // --------------------
 
 // Tampilkan form verifikasi
-Route::get('/verify-token', fn() => view('auth.verify-token'));
+Route::get('/verify-token', function () {
+    $code = session('reset_code');
+    $debug_code = config('app.debug') ? $code : null;
+
+    // Tambahkan log untuk memastikan session tersimpan
+    logger("DEBUG: Session reset_code sekarang = " . $code);
+
+    return view('auth.verify-token', ['debug_code' => $debug_code]);
+});
+
 
 // Saat user submit kode (POST)
 Route::post('/verify-token', function () {
     $token = request('token');
-    $correct = session('reset_code');
+    $correct = session('reset_code'); // <-- HARUS sama key-nya
+
+    logger("User input token = {$token}, Session code = {$correct}");
 
     if ($token == $correct) {
-        // Jika benar → arahkan ke reset password
         return redirect('/reset-password');
     } else {
-        // Jika salah → kembali dengan pesan error
         return back()->with('error', 'Kode verifikasi salah! Silakan coba lagi.');
     }
 });
+
 
 // --------------------
 //  RESET PASSWORD
@@ -144,4 +158,18 @@ Route::post('/reset-password', function () {
     session()->forget(['reset_email', 'reset_code']);
     return view('auth.reset-success');
 });
+// Halaman reset password
+Route::get('/reset-password', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 
+// Proses ubah password
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOTP'])->name('password.send');
+
+
+// Verifikasi OTP
+Route::get('/verify-token', [VerifyCodeController::class, 'showForm'])->name('verify.form');
+Route::post('/verify-token', [VerifyCodeController::class, 'verify'])->name('verify.check');
