@@ -158,7 +158,8 @@ Route::post('/verify-token', function () {
     } else {
         return back()->with('error', 'Kode verifikasi salah! Silakan coba lagi.');
     }
-});
+})->name('verify.check');
+
 
 // Tampilkan form reset password
 Route::get('/reset-password', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
