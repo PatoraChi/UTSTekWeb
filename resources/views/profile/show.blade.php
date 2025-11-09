@@ -139,11 +139,15 @@
                 <a href="{{ url('/edit-profile') }}" class="btn btn-outline-secondary w-100">Edit Profil</a>
             @else
                 <form class="follow-form flex-grow-1" action="{{ route('follow.toggle', $profileUser) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }} w-100">
-                        <span id="follow-text">{{ $isFollowing ? 'Mengikuti' : 'Ikuti' }}</span>
-                    </button>
-                </form>
+                    @csrf
+                                        <button type="submit" 
+                            class="btn {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }} w-100"
+                            data-follow-button-user-id="{{ $profileUser->id }}">
+                                                <span data-follow-text-user-id="{{ $profileUser->id }}">
+                            {{ $isFollowing ? 'Mengikuti' : 'Ikuti' }}
+                        </span>
+                    </button>
+                </form>
                 
                 @php
                     // Tentukan hak akses admin

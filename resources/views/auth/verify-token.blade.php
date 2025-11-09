@@ -36,11 +36,11 @@
     </div>
     </form>
 
-    @if (!empty($debug_code))
+    <!-- @if (!empty($debug_code))
     <div class="alert alert-info mt-3">
         <strong>DEBUG:</strong> Kode OTP kamu: <code>{{ $debug_code }}</code>
     </div>
-    @endif
+    @endif -->
 
   </div>
 

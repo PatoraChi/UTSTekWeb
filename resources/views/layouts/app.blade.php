@@ -137,15 +137,15 @@
                             <small class="text-white-50 d-block">Populer</small>
                         </div>
 
-                        @if ($followingIds->contains($recUser->id))
-                            <a href="{{ route('profile.show.user', $recUser) }}" class="btn btn-sm btn-outline-secondary ms-auto">
-                                Mengikuti
-                            </a>
-                        @else
-                            <a href="{{ route('profile.show.user', $recUser) }}" class="btn btn-sm btn-primary ms-auto">
-                                Ikuti
-                            </a>
-                        @endif
+                @php $isFollowing = $followingIds->contains($recUser->id); @endphp
+                    <form class="follow-form ms-auto" action="{{ route('follow.toggle', $recUser) }}" method="POST">
+                     @csrf
+                        <button type="submit" class="btn btn-sm {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }}" data-follow-button-user-id="{{ $recUser->id }}">
+                            <span data-follow-text-user-id="{{ $recUser->id }}">
+                                {{ $isFollowing ? 'Mengikuti' : 'Ikuti' }}
+                            </span>
+                        </button>
+                    </form>
                     </div>
                 @empty
                     <p class="text-white-50">Tidak ada rekomendasi user.</p>
@@ -273,56 +273,66 @@
             }
         });
 
-// --- 3. LOGIKA UNTUK FOLLOW ---
-        document.querySelectorAll('.follow-form').forEach(form => {
-            form.addEventListener('submit', async function (event) {
-                event.preventDefault(); // Hentikan refresh
-                
-                const url = this.action;
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        }
-                    });
+// --- 3. LOGIKA UNTUK FOLLOW [DIPERBARUI] ---
+        document.querySelectorAll('.follow-form').forEach(form => {
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault(); // Hentikan refresh
+                
+                const url = this.action;
+                
+                // 1. Ambil User ID dari URL form
+                const urlParts = url.split('/');
+                const userId = urlParts[urlParts.length - 1];
 
-                    // Cek jika respons-nya tidak OK
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
 
-                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-                    // Cari tombol & text di dalamnya
-                    const followText = document.getElementById('follow-text');
-                    const followButton = followText.parentElement; // Ini adalah <button>
-                    
-                    // Cari angka follower
-                    const followerCount = document.getElementById('follower-count');
+                    const data = await response.json();
 
-                    // Update angka
-                    followerCount.textContent = data.newCount; // Ini bagian penting
+                    // 2. Update SEMUA tombol & teks untuk user ini
+                    // Ini akan meng-update tombol di sidebar DAN di profil
+                    const allFollowButtons = document.querySelectorAll(`[data-follow-button-user-id="${userId}"]`);
+                    const allFollowTexts = document.querySelectorAll(`[data-follow-text-user-id="${userId}"]`);
+                    
+                    allFollowTexts.forEach(span => {
+                        span.textContent = data.isFollowing ? 'Mengikuti' : 'Ikuti';
+                    });
+                    
+                    allFollowButtons.forEach(button => {
+                        if (data.isFollowing) {
+                                button.classList.remove('btn-primary');
+                                button.classList.add('btn-outline-secondary');
+                        } else {
+                                button.classList.remove('btn-outline-secondary');
+                                button.classList.add('btn-primary');
+                        }
+                    });
 
-                    // Update tombol
-                    if (data.isFollowing) {
-                        followText.textContent = 'Mengikuti';
-                        followButton.classList.remove('btn-primary');
-                        followButton.classList.add('btn-outline-secondary');
-                    } else {
-                        followText.textContent = 'Ikuti';
-                        followButton.classList.remove('btn-outline-secondary');
-                        followButton.classList.add('btn-primary');
-                    }
+                    // 3. Update angka follower (HANYA jika ada di halaman)
+                    const followerCountEl = document.getElementById('follower-count');
+                    
+                    // Cek apakah form yang diklik ada di halaman profil user yang sama
+                    // (Kita cek apakah form-nya punya parent .profile-main-header)
+                    if (followerCountEl && this.closest('.profile-main-header')) {
+                        followerCountEl.textContent = data.newCount;
+                    }
 
-                } catch (error) {
-                    console.error('Error following user:', error);
-                }
-            });
-        });
+                } catch (error) {
+                    console.error('Error following user:', error);
+                }
+            });
+        });
     </script>
 </body>
 </html>
