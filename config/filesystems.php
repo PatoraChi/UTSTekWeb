@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'cloudinary'),
 
     /*
     |--------------------------------------------------------------------------
@@ -58,6 +58,13 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
+        ],
+        'cloudinary' => [
+            'driver' => 'cloudinary',
+            'storage_type' => 'image', // Bisa juga 'video' atau 'auto'
+            'url' => [
+            'secure' => true
+            ]
         ],
 
     ],
