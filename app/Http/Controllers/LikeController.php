@@ -6,7 +6,7 @@ use App\Models\Like;
 use App\Models\Post; // Penting untuk Route Model Binding
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session; // Penting untuk auth Anda
-
+use App\Models\Notification;
 class LikeController extends Controller
 {
     /**
@@ -16,6 +16,7 @@ class LikeController extends Controller
      */
     public function toggleLike(Post $post)
         {
+
             if (!Session::has('user')) {
                 // Jika request-nya AJAX, kembalikan error JSON
                 return response()->json(['error' => 'Unauthorized'], 401);
@@ -32,6 +33,10 @@ class LikeController extends Controller
                 // Jika SUDAH ada -> Hapus (Unlike)
                 $like->delete();
                 $isLiked = false;
+                Notification::where('sender_id', $userId)
+                        ->where('post_id', $post->id)
+                        ->where('type', 'post_like')
+                        ->delete();
             } else {
                 // Jika BELUM ada -> Buat (Like)
                 Like::create([
@@ -39,6 +44,16 @@ class LikeController extends Controller
                     'post_id' => $post->id,
                 ]);
                 $isLiked = true; // Status menjadi liked
+                // --- 2. TAMBAHKAN LOGIKA NOTIFIKASI DI SINI ---
+                // Hanya kirim notif jika kita tidak me-like postingan sendiri
+                if ($userId != $post->user_id) {
+                    Notification::create([
+                        'user_id'   => $post->user_id, // Penerima (Pemilik Post)
+                        'sender_id' => $userId,         // Pelaku (Yang nge-like)
+                        'type'      => 'post_like',
+                        'post_id'   => $post->id,
+                    ]);
+                }
             }
 
             // Ambil jumlah like terbaru

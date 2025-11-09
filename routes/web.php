@@ -17,6 +17,9 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\SaveController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CommentLikeController;
+use App\Http\Controllers\TopicController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\NotificationController;
 /*
 |--------------------------------------------------------------------------
 | Halaman Utama
@@ -276,3 +279,19 @@ Route::put('/comment/{comment}', [CommentController::class, 'update'])
 // 3. Menghapus komentar (Delete)
 Route::delete('/comment/{comment}', [CommentController::class, 'destroy'])
     ->name('comment.destroy');
+
+
+/*
+|--------------------------------------------------------------------------
+| Fitur Topik & Cari
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/topik', [TopicController::class, 'index']);
+Route::get('/cari', [SearchController::class, 'index']);
+/*
+|--------------------------------------------------------------------------
+| Fitur Notifikasi
+|--------------------------------------------------------------------------
+*/
+Route::get('/notifikasi', [NotificationController::class, 'index']);

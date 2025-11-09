@@ -1,4 +1,4 @@
-<div class="comment-container d-flex align-items-start mb-3">
+<div id="comment-{{ $comment->id }}" class="comment-container d-flex align-items-start mb-3">
     
     <img src="{{ $comment->user->profile_image ? asset('storage/' . $comment->user->profile_image) : 'https://via.placeholder.com/40' }}" 
          alt="profil" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">

@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use App\Models\Notification;
 
 class CommentController extends Controller
 {
@@ -14,7 +15,6 @@ class CommentController extends Controller
      */
     public function store(Request $request, Post $post)
     {
-        // ... (Isi method store() kamu biarkan saja) ...
         if (!Session::has('user')) {
             return redirect('/login');
         }
@@ -24,12 +24,48 @@ class CommentController extends Controller
             'parent_id' => 'nullable|exists:comments,id'
         ]);
 
-        Comment::create([
-            'user_id' => Session::get('user.id'),
-            'post_id' => $post->id,
+        $senderId = Session::get('user.id');
+
+        // ----- 2. UBAH BAGIAN INI -----
+        // Kita simpan komentarnya ke variabel $comment
+        $comment = Comment::create([
+            'user_id'   => $senderId,
+            'post_id'   => $post->id,
             'parent_id' => $request->parent_id,
-            'body' => $request->body
+            'body'      => $request->body
         ]);
+
+        // ----- 3. TAMBAHKAN LOGIKA NOTIFIKASI INI -----
+        if ($request->parent_id) {
+            // INI ADALAH BALASAN (REPLY)
+            // Cari pemilik komentar yang dibalas
+            $parentComment = Comment::find($request->parent_id);
+            
+            // Kirim notif ke pemilik komentar (jika bukan membalas diri sendiri)
+            if ($parentComment && $senderId != $parentComment->user_id) {
+                Notification::create([
+                    'user_id'   => $parentComment->user_id, // Penerima
+                    'sender_id' => $senderId,              // Pelaku
+                    'type'      => 'comment_reply',
+                    'post_id'   => $post->id,
+                    'comment_id'=> $comment->id // Komentar balasan baru
+                ]);
+            }
+
+        } else {
+            // INI ADALAH KOMENTAR BARU
+            // Kirim notif ke pemilik postingan (jika bukan komentar di post sendiri)
+            if ($senderId != $post->user_id) {
+                Notification::create([
+                    'user_id'   => $post->user_id, // Penerima
+                    'sender_id' => $senderId,      // Pelaku
+                    'type'      => 'post_comment',
+                    'post_id'   => $post->id,
+                    'comment_id'=> $comment->id // Komentar baru
+                ]);
+            }
+        }
+        // ----- AKHIR BLOK NOTIFIKASI -----
 
         return back()->with('success', 'Komentar Anda diposting!');
     }
