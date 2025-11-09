@@ -2,7 +2,7 @@
     
     <div class="post-header">
         <a href="{{ route('profile.show.user', $post->user) }}" class="d-flex align-items-center text-decoration-none text-white">
-            <img src="{{ $post->user->profile_image ? asset('storage/' . $post->user->profile_image) : 'https://via.placeholder.com/35' }}" 
+            <img src="{{ $post->user->profile_image_url }}"
                  alt="profil" class="rounded-circle" width="35" height="35" style="object-fit: cover;">
             <strong class="ms-2">{{ $post->user->name }}</strong>
         </a>

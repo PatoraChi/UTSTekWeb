@@ -33,7 +33,7 @@
             @csrf
             <input type="hidden" name="parent_id" value=""> 
             
-            <img src="{{ $authUser->profile_image ? asset('storage/' . $authUser->profile_image) : 'https://via.placeholder.com/40' }}" 
+            <img src="{{ $authUser->profile_image_url }}"
                  alt="profil" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
             
             <textarea name="body" class="form-control bg-dark text-white me-2" rows="1" placeholder="Tulis komentar..." required></textarea>

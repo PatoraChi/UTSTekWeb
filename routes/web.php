@@ -196,8 +196,8 @@ Route::get('/profile', [ProfileController::class, 'show'])
     ->name('profile.show');
 
 // 3. Route untuk melihat profil ORANG LAIN ( /profile/5 )
-Route::get('/profile/{user}', [ProfileController::class, 'show'])
-    ->name('profile.show.user'); // {user} akan jadi Route Model Binding
+Route::get('/profile/{profile}', [ProfileController::class, 'show']) // <-- UBAH DI SINI
+    ->name('profile.show.user');
 
 // 4. Route untuk Halaman Edit Profil ( /edit-profile )
 Route::get('/edit-profile', [ProfileController::class, 'edit'])
@@ -211,7 +211,7 @@ Route::post('/edit-profile', [ProfileController::class, 'update']) // Kamu sudah
 |--------------------------------------------------------------------------
 */
 // 5. Route untuk Aksi Follow/Unfollow (AJAX)
-Route::post('/follow/{user}', [FollowController::class, 'toggleFollow'])
+Route::post('/follow/{profile}', [FollowController::class, 'toggleFollow'])
     ->name('follow.toggle');
 
 /*

@@ -58,10 +58,10 @@
                                 @endphp
                             <li>
                                 <div class="dropdown-item d-flex align-items-start py-2">
-                                    <a href="{{ route('profile.show.user', $notif->sender) }}">
-                                        <img src="{{ $notif->sender->profile_image ? asset('storage/' . $notif->sender->profile_image) : 'https://via.placeholder.com/35' }}" 
-                                            alt="profil" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
-                                    </a>
+                                <a href="{{ route('profile.show.user', $notif->sender) }}">
+                                    <img src="{{ $notif->sender->profile_image_url }}" 
+                                        alt="profil" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
+                                </a>
                                     <div style="white-space: normal; line-height: 1.3;">
                                         <a href="{{ route('profile.show.user', $notif->sender) }}" class="text-decoration-none text-white">
                                             <strong>{{ $notif->sender->name }}</strong>
@@ -91,7 +91,7 @@
                         id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="me-2"><strong>{{ $user->name }}</strong></span>
                             <img 
-                                src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://via.placeholder.com/35' }}" 
+                                src="{{ $user->profile_image_url }}"
                                 alt="profil" 
                                 class="profile-img rounded-circle"
                                 width="35" height="35"  
@@ -115,23 +115,33 @@
                 <h5>Rekomendasi untuk Anda</h5>
                 <hr>
                 
-                <div class="d-flex align-items-center mb-2">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="rekomendasi">
-                    <div>
-                        <strong>user_anime_keren</strong><br>
-                        <small class="text-white">Populer</small>
+                @forelse ($recommendedUsers as $recUser)
+                    <div class="d-flex align-items-center mb-3">
+                        <a href="{{ route('profile.show.user', $recUser) }}">
+                            <img src="{{ $recUser->profile_image_url }}"
+                                 alt="profil" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
+                        </a>
+                        
+                        <div class="flex-grow-1">
+                            <a href="{{ route('profile.show.user', $recUser) }}" class="text-white text-decoration-none">
+                                <strong>{{ $recUser->name }}</strong>
+                            </a>
+                            <small class="text-white-50 d-block">Populer</small>
+                        </div>
+
+                        @if ($followingIds->contains($recUser->id))
+                            <a href="{{ route('profile.show.user', $recUser) }}" class="btn btn-sm btn-outline-secondary ms-auto">
+                                Mengikuti
+                            </a>
+                        @else
+                            <a href="{{ route('profile.show.user', $recUser) }}" class="btn btn-sm btn-primary ms-auto">
+                                Ikuti
+                            </a>
+                        @endif
                     </div>
-                    <a href="#" class="btn btn-sm btn-primary ms-auto">Ikuti</a>
-                </div>
-                
-                <div class="d-flex align-items-center mb-2">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="rekomendasi">
-                    <div>
-                        <strong>gamer_sejati</strong><br>
-                        <small class="text-white">Sering posting #game</small>
-                    </div>
-                    <a href="#" class="btn btn-sm btn-primary ms-auto">Ikuti</a>
-                </div>
+                @empty
+                    <p class="text-white-50">Tidak ada rekomendasi user.</p>
+                @endforelse
                 
             </div> 
         </div> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

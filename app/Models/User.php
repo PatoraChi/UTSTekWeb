@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -98,5 +99,43 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Auth
         return $this->following()->where('following_id', $user->id)->exists();
     }
     
+/**
+     * Relasi: Postingan yang di-LIKE oleh user ini.
+     * Kita menggunakan tabel 'likes' sebagai pivot.
+     */
+    public function likedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'likes', 'user_id', 'post_id')
+                    ->withTimestamps() // Untuk mengambil data created_at
+                    ->latest('likes.created_at'); // Urutkan dari yang terbaru di-like
+    }
 
+    /**
+     * Relasi: Postingan yang di-SAVE oleh user ini.
+     * Kita menggunakan tabel 'saves' sebagai pivot.
+     */
+    public function savedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'saves', 'user_id', 'post_id')
+                    ->withTimestamps()
+                    ->latest('saves.created_at'); // Urutkan dari yang terbaru di-save
+    }
+    
+    /**
+     * Relasi: Semua komentar yang dibuat oleh user ini.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
+    protected function profileImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->profile_image
+                // Jika user PUNYA foto profil:
+                ? asset('storage/' . $this->profile_image)
+                // Jika user TIDAK PUNYA foto profil:
+                : asset('images/default_avatar.png') // <-- Arahkan ke gambar defaultmu
+        );
+    }
 }

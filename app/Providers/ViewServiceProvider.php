@@ -20,38 +20,49 @@ class ViewServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     */
-    public function boot(): void
+     */public function boot(): void
     {
         View::composer('layouts.app', function ($view) {
             
-            $user = null;
+            $globalUser = null;
             $unreadCount = 0;
-            $recentNotifications = collect(); // Buat koleksi kosong
-
+            $recentNotifications = collect();
+            $recommendedUsers = collect(); 
+            $followingIds = collect();
             if (Session::has('user')) {
                 // 1. Ambil data user
-                $user = User::find(Session::get('user.id'));
+                $globalUser = User::find(Session::get('user.id'));
 
-                if ($user) {
-                    // 2. Ambil JUMLAH notif yang belum dibaca
-                    $unreadCount = Notification::where('user_id', $user->id)
+                if ($globalUser) {
+// 2. Ambil data Notifikasi (Kode lamamu)
+                    $unreadCount = Notification::where('user_id', $globalUser->id)
                                                ->whereNull('read_at')
                                                ->count();
                     
-                    // 3. Ambil 5 notif terbaru (dibaca maupun belum)
-                    $recentNotifications = Notification::where('user_id', $user->id)
+                    $recentNotifications = Notification::where('user_id', $globalUser->id)
                                                        ->with('sender')
                                                        ->latest()
                                                        ->take(5)
                                                        ->get();
+
+                    // 3. Ambil Rekomendasi (Kode lamamu)
+                    $recommendedUsers = User::withCount('followers') 
+                                        ->where('id', '!=', $globalUser->id) 
+                                        ->orderBy('followers_count', 'desc') 
+                                        ->take(6) 
+                                        ->get();
+                                        
+                    // --- 4. LOGIKA BARU: Ambil ID user yang kita ikuti ---
+                    $followingIds = $globalUser->following()->pluck('id');
+                    // --------------------------------------------------
                 }
             }
             
-            // 4. Kirim semua data ke layout 'layouts.app'
-            $view->with('user', $user)
+        $view->with('user', $globalUser)
                  ->with('unreadCount', $unreadCount)
-                 ->with('recentNotifications', $recentNotifications);
+                 ->with('recentNotifications', $recentNotifications)
+                 ->with('recommendedUsers', $recommendedUsers) // Data rekomendasi
+                 ->with('followingIds', $followingIds); // Data user yg kita follow
         });
     }
 }
