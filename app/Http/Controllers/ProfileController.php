@@ -127,11 +127,11 @@ class ProfileController extends Controller
 
         // ✅ Upload foto profil
         if ($request->hasFile('profile_image')) {
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
+            if ($user->profile_image && Storage::disk('cloudinary')->exists($user->profile_image)) {
+                Storage::disk('cloudinary')->delete($user->profile_image);
             }
 
-            $path = $request->file('profile_image')->store('profiles', 'public');
+            $path = $request->file('profile_image')->store('profiles', 'cloudinary');
             $user->profile_image = $path;
         }
 

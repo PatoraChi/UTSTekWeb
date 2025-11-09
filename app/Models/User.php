@@ -8,7 +8,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Authenticatable
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -137,7 +139,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Auth
         return Attribute::make(
             get: fn () => $this->profile_image
                 // Jika user PUNYA foto profil:
-                ? asset('storage/' . $this->profile_image)
+                ? asset('cloudinary' . $this->profile_image)
                 // Jika user TIDAK PUNYA foto profil:
                 : asset('images/default_avatar.png') // <-- Arahkan ke gambar defaultmu
         );

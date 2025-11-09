@@ -74,10 +74,10 @@
     <div class="post-media">
         @foreach ($post->media as $media)
             @if ($media->file_type == 'image')
-                <img src="{{ asset('storage/' . $media->file_path) }}" alt="Post media">
+                <img src="{{ $media->url }}" alt="Post media">
             @elseif ($media->file_type == 'video')
                 <video controls style="width: 100%;">
-                    <source src="{{ asset('storage/' . $media->file_path) }}" type="video/mp4">
+                    <source src="{{ $media->url }}" type="video/mp4">
                     Browser Anda tidak mendukung tag video.
                 </video>
             @endif

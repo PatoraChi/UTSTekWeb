@@ -61,9 +61,9 @@ class PostController extends Controller
                 // Tentukan tipe file
                 $fileType = Str::startsWith($file->getMimeType(), 'video') ? 'video' : 'image';
                 
-                // Simpan file ke 'storage/app/public/posts'
+                
                 // Nama file akan di-hash (random) agar unik
-                $path = $file->store('posts', 'public');
+                $path = $file->store('posts', 'cloudinary');
 
                 // Simpan info file ke tabel post_media
                 PostMedia::create([

@@ -25,7 +25,7 @@ class Post extends Model
             
             // 1. Hapus semua file media dari storage
             foreach ($post->media as $media) {
-                Storage::disk('public')->delete($media->file_path);
+                Storage::disk('cloudinary')->delete($media->file_path);
             }
 
             // 2. Hapus relasi database (ini akan menghapus record di tabel lain)
