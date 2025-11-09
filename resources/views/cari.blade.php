@@ -32,13 +32,17 @@
             <h4 class="text-white mb-3">Hasil Pencarian User untuk "{{ $query }}"</h4>
             @forelse ($usersResult as $foundUser)
                 <div class="d-flex align-items-center mb-3 p-3 bg-dark rounded">
-                    <img src="{{ $foundUser->profile_image ? asset('storage/' . $foundUser->profile_image) : 'https://via.placeholder.com/40' }}" 
-                         alt="profil" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
-                    <div>
-                        <strong class="text-white">{{ $foundUser->name }}</strong>
+                    <a href="{{ route('profile.show.user', $foundUser) }}">
+                        <img src="{{ $foundUser->profile_image ? asset('storage/' . $foundUser->profile_image) : 'https://via.placeholder.com/40' }}" 
+                             alt="profil" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                    </a>
+                    <div class="flex-grow-1">
+                        <a href="{{ route('profile.show.user', $foundUser) }}" class="text-decoration-none text-white">
+                            <strong class="text-white">{{ $foundUser->name }}</strong>
+                        </a>
                         <small class="text-muted d-block">{{ $foundUser->email }}</small>
                     </div>
-                    <a href="{{ url('/profile/' . $foundUser->id) }}" class="btn btn-sm btn-outline-primary ms-auto">Lihat Profil</a>
+                    <a href="{{ route('profile.show.user', $foundUser) }}" class="btn btn-sm btn-outline-primary ms-auto">Lihat Profil</a>
                 </div>
             @empty
                 <div class="text-center p-5 text-white-50">

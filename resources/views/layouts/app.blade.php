@@ -18,7 +18,7 @@
         <a href="{{ url('/post/create') }}" class="{{ request()->is('post/create') ? 'active' : '' }}"><i class="bi bi-plus-circle"></i> Buat</a>
         <a href="{{ url('/cari') }}" class="{{ request()->is('cari') ? 'active' : '' }}"><i class="bi bi-search"></i> Cari</a>
         <a href="{{ url('/notifikasi') }}"><i class="bi bi-bell"></i> Notifikasi</a>
-        <a href="#"><i class="bi bi-person-circle"></i> Akun ku</a>
+        <a href="{{ url('/profile') }}" class="{{ request()->is('profile*') ? 'active' : '' }}"><i class="bi bi-person-circle"></i> Akun ku</a>
     </div>
 
     <div class="main-content">
@@ -56,17 +56,23 @@
                                         case 'comment_reply': $message = 'membalas komentar Anda.'; break;
                                     }
                                 @endphp
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-start py-2" href="{{ $link }}">
+                            <li>
+                                <div class="dropdown-item d-flex align-items-start py-2">
+                                    <a href="{{ route('profile.show.user', $notif->sender) }}">
                                         <img src="{{ $notif->sender->profile_image ? asset('storage/' . $notif->sender->profile_image) : 'https://via.placeholder.com/35' }}" 
                                             alt="profil" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
-                                        <div style="white-space: normal; line-height: 1.3;">
+                                    </a>
+                                    <div style="white-space: normal; line-height: 1.3;">
+                                        <a href="{{ route('profile.show.user', $notif->sender) }}" class="text-decoration-none text-white">
                                             <strong>{{ $notif->sender->name }}</strong>
+                                        </a>
+                                        <a href="{{ $link }}" class="text-decoration-none">
                                             <small class="text-white-50">{{ $message }}</small>
                                             <small class="d-block text-white-50 mt-1">{{ $notif->created_at->diffForHumans() }}</small>
-                                        </div>
-                                    </a>
-                                </li>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
                             @empty
                                 <li><p class="dropdown-item text-center text-white-50 py-3">Tidak ada notifikasi.</p></li>
                             @endforelse
@@ -247,6 +253,57 @@
                     }, 2000); // Hilang setelah 2 detik
                 }
             }
+        });
+
+// --- 3. LOGIKA UNTUK FOLLOW ---
+        document.querySelectorAll('.follow-form').forEach(form => {
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault(); // Hentikan refresh
+                
+                const url = this.action;
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    // Cek jika respons-nya tidak OK
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Cari tombol & text di dalamnya
+                    const followText = document.getElementById('follow-text');
+                    const followButton = followText.parentElement; // Ini adalah <button>
+                    
+                    // Cari angka follower
+                    const followerCount = document.getElementById('follower-count');
+
+                    // Update angka
+                    followerCount.textContent = data.newCount; // Ini bagian penting
+
+                    // Update tombol
+                    if (data.isFollowing) {
+                        followText.textContent = 'Mengikuti';
+                        followButton.classList.remove('btn-primary');
+                        followButton.classList.add('btn-outline-secondary');
+                    } else {
+                        followText.textContent = 'Ikuti';
+                        followButton.classList.remove('btn-outline-secondary');
+                        followButton.classList.add('btn-primary');
+                    }
+
+                } catch (error) {
+                    console.error('Error following user:', error);
+                }
+            });
         });
     </script>
 </body>

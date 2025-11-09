@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-class User extends Authenticatable
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'bio',
+        'profile_image',
     ];
 
     /**
@@ -53,4 +55,48 @@ class User extends Authenticatable
     {
         return $this->hasMany(Save::class);
     }
+/**
+     * Relasi: User ini punya banyak Postingan
+     */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Relasi: User ini 'diikuti oleh' (Followers) banyak User lain
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,     // Model tujuan
+            'follows',       // Nama tabel pivot
+            'following_id',  // Foreign key di pivot untuk user INI
+            'follower_id'    // Foreign key di pivot untuk user LAIN
+        );
+    }
+
+    /**
+     * Relasi: User ini 'mengikuti' (Following) banyak User lain
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,     // Model tujuan
+            'follows',       // Nama tabel pivot
+            'follower_id',   // Foreign key di pivot untuk user INI
+            'following_id'   // Foreign key di pivot untuk user LAIN
+        );
+    }
+    
+    /**
+     * Helper: Cek apakah user yang login sedang mengikuti $user
+     */
+    public function isFollowing(User $user): bool
+    {
+        // Cek di daftar 'following' milik kita, apakah ada id $user
+        return $this->following()->where('following_id', $user->id)->exists();
+    }
+    
+
 }

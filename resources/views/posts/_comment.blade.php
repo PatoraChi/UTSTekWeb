@@ -1,11 +1,15 @@
 <div id="comment-{{ $comment->id }}" class="comment-container d-flex align-items-start mb-3">
     
-    <img src="{{ $comment->user->profile_image ? asset('storage/' . $comment->user->profile_image) : 'https://via.placeholder.com/40' }}" 
-         alt="profil" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
+    <a href="{{ route('profile.show.user', $comment->user) }}">
+        <img src="{{ $comment->user->profile_image ? asset('storage/' . $comment->user->profile_image) : 'https://via.placeholder.com/40' }}" 
+             alt="profil" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
+    </a>
     
     <div class="comment-content w-100">
         <div class="comment-header d-flex align-items-center">
-            <strong>{{ $comment->user->name }}</strong>
+            <a href="{{ route('profile.show.user', $comment->user) }}" class="text-decoration-none text-white">
+                <strong>{{ $comment->user->name }}</strong>
+            </a>
             <small class="text-white ms-2">· {{ $comment->created_at->diffForHumans() }}</small>
 
             <form class="comment-like-form ms-auto" action="{{ url('/comment/' . $comment->id . '/like') }}" method="POST">

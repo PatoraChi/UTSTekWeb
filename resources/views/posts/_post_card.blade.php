@@ -1,9 +1,11 @@
 <div class="post-card shadow-sm" id="post-{{ $post->id }}">
     
     <div class="post-header">
-        <img src="{{ $post->user->profile_image ? asset('storage/' . $post->user->profile_image) : 'https://via.placeholder.com/35' }}" 
-             alt="profil" class="rounded-circle" width="35" height="35" style="object-fit: cover;">
-        <strong>{{ $post->user->name }}</strong>
+        <a href="{{ route('profile.show.user', $post->user) }}" class="d-flex align-items-center text-decoration-none text-white">
+            <img src="{{ $post->user->profile_image ? asset('storage/' . $post->user->profile_image) : 'https://via.placeholder.com/35' }}" 
+                 alt="profil" class="rounded-circle" width="35" height="35" style="object-fit: cover;">
+            <strong class="ms-2">{{ $post->user->name }}</strong>
+        </a>
 
         @if ($post->user_id == $user->id)
             <div class="dropdown ms-auto">

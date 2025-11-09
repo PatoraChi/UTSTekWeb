@@ -105,7 +105,12 @@ class PostController extends Controller
             }
 
             // Ambil data user yang sedang login
-            $user = User::find(Session::get('user.id'));
+            // GANTI NAMA '$user' menjadi '$authUser' agar konsisten
+            $authUser = User::find(Session::get('user.id'));
+            if (!$authUser) { // Juga perbarui cek ini
+                Session::forget('user');
+                return redirect('/login');
+            }
 
             // Load relasi post (seperti di Home)
             $post->load(['user', 'media', 'likes', 'saves']);
@@ -116,7 +121,8 @@ class PostController extends Controller
                             ->latest() // Tampilkan komentar terbaru di atas
                             ->get();
 
-            return view('posts.show', compact('user', 'post', 'comments'));
+            // KIRIM '$authUser' (bukan '$user' lagi)
+            return view('posts.show', compact('authUser', 'post', 'comments'));
         }
         /**
          * Menampilkan form untuk mengedit postingan.

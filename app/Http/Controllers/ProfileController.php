@@ -9,21 +9,49 @@ use App\Models\User;
 
 class ProfileController extends Controller
 {
-    public function show()
+    public function show(User $user = null)
     {
+        // 1. Dapatkan user yang sedang login
         $sessionUser = Session::get('user');
-
-        // ⛔ Cek apakah user ada di session
         if (!$sessionUser) {
             return redirect('/login');
         }
+        // $authUser = User yang sedang login
+        $authUser = User::find($sessionUser['id']);
 
-        // ✅ Ambil data lengkap dari database
-        $user = User::find($sessionUser['id']);
+        // 2. Tentukan profil siapa yang mau ditampilkan
+        if ($user === null) {
+            // Jika URL-nya /profile (kosong), tampilkan profil sendiri
+            $profileUser = $authUser;
+        } else {
+            // Jika URL-nya /profile/5, tampilkan profil user 5
+            $profileUser = $user;
+        }
 
-        return view('profile.show', compact('user'));
+        // 3. Ambil data untuk profil $profileUser
+        
+        // Ambil postingan milik $profileUser
+        $posts = $profileUser->posts()->with('media', 'likes', 'saves')->withCount('allComments')->latest()->get();
+        
+        // Hitung jumlah
+        $postCount = $posts->count();
+        $followerCount = $profileUser->followers()->count();
+        $followingCount = $profileUser->following()->count();
+        
+        // Cek status follow (apakah $authUser mengikuti $profileUser)
+        $isFollowing = $authUser->isFollowing($profileUser);
+
+        // 4. Kirim semua data ke view
+        return view('profile.show', compact(
+            'authUser',     // User yang login
+            'profileUser',  // User yang profilnya dilihat
+            'posts',
+            'postCount',
+            'followerCount',
+            'followingCount',
+            'isFollowing'
+        ));
     }
-
     public function edit()
     {
         $sessionUser = Session::get('user');

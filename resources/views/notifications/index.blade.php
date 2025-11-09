@@ -36,16 +36,22 @@
                 }
             @endphp
 
-            <a href="{{ $link }}" class="notification-item d-flex align-items-center p-3 mb-2 rounded {{ !$notif->read_at ? 'bg-primary bg-opacity-10' : 'bg-dark' }}" 
-               style="text-decoration: none; border: 1px solid #3a3f44;">
-                <img src="{{ $notif->sender->profile_image ? asset('storage/' . $notif->sender->profile_image) : 'https://via.placeholder.com/40' }}" 
-                     alt="profil" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+            <div class="notification-item d-flex align-items-center p-3 mb-2 rounded {{ !$notif->read_at ? 'bg-primary bg-opacity-10' : 'bg-dark' }}" 
+               style="border: 1px solid #3a3f44;">
+                <a href="{{ route('profile.show.user', $notif->sender) }}">
+                    <img src="{{ $notif->sender->profile_image ? asset('storage/' . $notif->sender->profile_image) : 'https://via.placeholder.com/40' }}" 
+                         alt="profil" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                </a>
                 <div class="text-white">
-                    <strong>{{ $notif->sender->name }}</strong>
-                    <span class="text-white-50">{{ $message }}</span>
-                    <small class="d-block text-white-50 mt-1">{{ $notif->created_at->diffForHumans() }}</small>
+                    <a href="{{ route('profile.show.user', $notif->sender) }}" class="text-decoration-none text-white">
+                        <strong>{{ $notif->sender->name }}</strong>
+                    </a>
+                    <a href="{{ $link }}" class="text-decoration-none">
+                        <span class="text-white-50">{{ $message }}</span>
+                        <small class="d-block text-white-50 mt-1">{{ $notif->created_at->diffForHumans() }}</small>
+                    </a>
                 </div>
-            </a>
+            </div>
 
         @empty
             <div class="text-center p-5 text-white-50">

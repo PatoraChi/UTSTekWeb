@@ -20,6 +20,7 @@ use App\Http\Controllers\CommentLikeController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\FollowController;
 /*
 |--------------------------------------------------------------------------
 | Halaman Utama
@@ -187,30 +188,31 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name(
 |--------------------------------------------------------------------------
 | Profil (Show & Edit)
 |--------------------------------------------------------------------------
-|
-| Menggunakan session buatan sendiri, bukan middleware "auth" bawaan Laravel.
-| Jadi kita buat middleware manual agar cek Session::has('user')
-|
 */
+// HAPUS Route::group lama kamu dan GANTI DENGAN INI:
 
-// routes/web.php (KODE BARU YANG BENAR)
-Route::group(['prefix' => '', 'middleware' => 'web'], function () {
+// 2. Route untuk melihat profil SENDIRI ( /profile )
+Route::get('/profile', [ProfileController::class, 'show'])
+    ->name('profile.show');
 
-    // Cek login di controller, tapi bisa juga tambahkan middleware buatan sendiri nanti
-    // Untuk sekarang, controller-mu sudah handle cek session
+// 3. Route untuk melihat profil ORANG LAIN ( /profile/5 )
+Route::get('/profile/{user}', [ProfileController::class, 'show'])
+    ->name('profile.show.user'); // {user} akan jadi Route Model Binding
 
-    // Arahkan ke ProfileController@show
-    Route::get('/profile', [ProfileController::class, 'show'])
-         ->name('profile.show');
+// 4. Route untuk Halaman Edit Profil ( /edit-profile )
+Route::get('/edit-profile', [ProfileController::class, 'edit'])
+    ->name('profile.edit');
+Route::post('/edit-profile', [ProfileController::class, 'update']) // Kamu sudah punya ini
+    ->name('profile.update');
 
-    // Arahkan ke ProfileController@edit
-    Route::get('/edit-profile', [ProfileController::class, 'edit'])
-         ->name('profile.edit');
-
-    // Arahkan ke ProfileController@update
-    Route::post('/edit-profile', [ProfileController::class, 'update'])
-         ->name('profile.update');
-});
+/*
+|--------------------------------------------------------------------------
+| Fitur Follow
+|--------------------------------------------------------------------------
+*/
+// 5. Route untuk Aksi Follow/Unfollow (AJAX)
+Route::post('/follow/{user}', [FollowController::class, 'toggleFollow'])
+    ->name('follow.toggle');
 
 /*
 |--------------------------------------------------------------------------
