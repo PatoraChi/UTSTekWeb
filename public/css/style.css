@@ -4,6 +4,7 @@ body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
+    overflow: hidden
 }
 
 /* Sidebar */
@@ -113,14 +114,18 @@ body {
     flex: 1; /* Ambil sisa ruang */
     overflow-y: auto; /* KUNCI: Hanya kolom ini yang bisa di-scroll */
     padding: 20px;
+    scrollbar-width: none;
 }
-
+/* Untuk browser Chrome, Safari, dan Edge */
+.feed-column::-webkit-scrollbar {
+    display: none;
+}
 /* Kolom Kanan (Rekomendasi) */
 .recommendation-column {
     width: 300px; /* Lebar kolom kanan */
     padding: 20px;
-    border-left: 1px solid #eee;
-    background-color: #f8f9fa;
+    border-left: 1px solid #ffffff18;
+    background-color: #ffffff18;
     /* KUNCI: Tetap di tempat saat di-scroll */
     position: sticky; 
     top: 56px; /* Nempel di bawah navbar */
@@ -133,8 +138,8 @@ body {
 |--------------------------------------------------------------------------
 */
 .post-card {
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: #ffffff18;
+    border: 1px solid #ffffff18;
     border-radius: 8px;
     margin-bottom: 25px;
     overflow: hidden; /* Agar gambar tidak keluar dari card */
@@ -144,7 +149,7 @@ body {
     display: flex;
     align-items: center;
     padding: 12px 15px;
-    color: #000;
+    color: #ffffff;
 }
 
 .post-header img {
@@ -162,9 +167,9 @@ body {
     height: auto;
     max-height: 600px; /* Batasi tinggi media */
     object-fit: contain; /* Tampilkan penuh tanpa distorsi */
-    background-color: #000;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
+    background-color: #ffffff18;
+    border-top: 1px solid #ffffff18;
+    border-bottom: 1px solid #ffffff18;
 }
 
 .post-actions {
@@ -172,19 +177,22 @@ body {
     align-items: center;
     padding: 10px 15px;
     font-size: 1.5rem; /* Ukuran icon */
+    color: #ffffff;
 }
 
 .post-actions i {
     margin-right: 15px;
     cursor: pointer;
+    color: #ffffff;
 }
 
 /* Ini untuk menargetkan icon yang punya class 'ms-auto' (bookmark) */
 .post-actions i.ms-auto {
     margin-right: 0; 
+    color: #ffffff;
 }
 
 .post-caption {
     padding: 0 15px 15px 15px;
-    color: #000;
+    color: #ffffff;
 }

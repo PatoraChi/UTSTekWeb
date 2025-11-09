@@ -13,7 +13,8 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PostController;
 use App\Models\Post;
-
+use App\Http\Controllers\LikeController;
+use App\Http\Controllers\SaveController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,7 +38,7 @@ Route::get('/', function () {
     // Kita pakai 'with' (Eager Loading) agar lebih efisien
     // Kita ambil juga data 'user' (pemilik post) dan 'media' (file-filenya)
     // Diurutkan dari yang paling baru (latest)
-    $posts = Post::with(['user', 'media'])->latest()->get();
+    $posts = Post::with(['user', 'media', 'likes', 'saves'])->latest()->get();
 
     // KIRIM DATA $user dan $posts KE VIEW
     return view('home', compact('user', 'posts'));
@@ -214,3 +215,20 @@ Route::get('/post/create', [PostController::class, 'create']);
 
 // Proses simpan data dari form 'Buat'
 Route::post('/post/store', [PostController::class, 'store']);
+
+/*
+|--------------------------------------------------------------------------
+| Fitur Interaksi (Like)
+|--------------------------------------------------------------------------
+*/
+
+// {post} akan otomatis di-binding ke parameter (Post $post) di controller
+Route::post('/post/{post}/like', [LikeController::class, 'toggleLike']);
+/*
+|--------------------------------------------------------------------------
+| Fitur Interaksi (Save)
+|--------------------------------------------------------------------------
+*/
+
+// {post} akan otomatis di-binding ke parameter (Post $post) di controller
+Route::post('/post/{post}/save', [SaveController::class, 'toggleSave']);

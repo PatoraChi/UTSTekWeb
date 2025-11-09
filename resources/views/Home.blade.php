@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LahIya | Home</title>
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -81,12 +81,37 @@
                             @endif
                         @endforeach
                     </div>
-                    
+                                        
                     <div class="post-actions">
-                        <i class="bi bi-heart"></i>
-                        <i class="bi bi-chat-dots"></i>
-                        <i class="bi bi-bookmark ms-auto"></i> 
-                    </div>
+
+                    @php
+                        $isLiked = $post->likes->contains('user_id', $user->id);
+                        $isSaved = $post->saves->contains('user_id', $user->id);
+                    @endphp
+
+                    <form class="like-form" action="{{ url('/post/' . $post->id . '/like') }}" method="POST" style="display: inline-block;">
+                        @csrf
+                        <button type="submit" style="border: none; background: none; padding: 0; color: inherit;">
+                            <i id="like-icon-{{ $post->id }}" 
+                            class="bi {{ $isLiked ? 'bi-heart-fill text-danger' : 'bi-heart' }}">
+                            </i>
+                        </button>
+                    </form>
+
+                    <span id="like-count-{{ $post->id }}" class="fw-bold ms-2">{{ $post->likes->count() }}</span>
+                    
+                    <i class="bi bi-chat-dots ms-3"></i> 
+
+                    <form class="save-form ms-auto" action="{{ url('/post/' . $post->id . '/save') }}" method="POST">
+                        @csrf
+                        <button type="submit" style="border: none; background: none; padding: 0; color: inherit;">
+                            <i id="save-icon-{{ $post->id }}" 
+                            class="bi {{ $isSaved ? 'bi-bookmark-fill' : 'bi-bookmark' }}">
+                            </i>
+                        </button>
+                    </form>
+
+                </div>
 
                     <div class="post-caption">
                         <p><strong>{{ $post->user->name }}</strong> {{ $post->caption }}</p>
@@ -125,5 +150,99 @@
             </div>
             
         </div> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Ambil CSRF token dari meta tag yang kita buat
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        // --- 1. LOGIKA UNTUK LIKE ---
+        // Cari SEMUA form 'like' di halaman
+        document.querySelectorAll('.like-form').forEach(form => {
+            // Tambahkan 'listener' untuk 'submit'
+            form.addEventListener('submit', async function (event) {
+                // KUNCI: Hentikan refresh halaman
+                event.preventDefault(); 
+
+                const url = this.action;
+                const postId = url.split('/')[4]; // Ambil ID postingan dari URL form
+                
+                try {
+                    // Kirim request ke server di 'background'
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json', // Minta respon JSON
+                            'Content-Type': 'application/json'
+                        },
+                        // body tidak perlu diisi, URL sudah cukup
+                    });
+
+                    // Ambil data JSON dari controller
+                    const data = await response.json();
+
+                    // Cari elemen ikon dan angka yang spesifik
+                    const icon = document.getElementById('like-icon-' + postId);
+                    const count = document.getElementById('like-count-' + postId);
+
+                    // Update angka like
+                    count.textContent = data.newCount;
+
+                    // Update ikon (ganti class-nya)
+                    if (data.isLiked) {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill', 'text-danger');
+                    } else {
+                        icon.classList.remove('bi-heart-fill', 'text-danger');
+                        icon.classList.add('bi-heart');
+                    }
+
+                } catch (error) {
+                    console.error('Error liking post:', error);
+                }
+            });
+        });
+
+        // --- 2. LOGIKA UNTUK SAVE (SAMA PERSIS) ---
+        // Cari SEMUA form 'save' di halaman
+        document.querySelectorAll('.save-form').forEach(form => {
+            form.addEventListener('submit', async function (event) {
+                // KUNCI: Hentikan refresh halaman
+                event.preventDefault(); 
+
+                const url = this.action;
+                const postId = url.split('/')[4];
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    // Cari ikon 'save' yang spesifik
+                    const icon = document.getElementById('save-icon-' + postId);
+
+                    // Update ikon 'save'
+                    if (data.isSaved) {
+                        icon.classList.remove('bi-bookmark');
+                        icon.classList.add('bi-bookmark-fill');
+                    } else {
+                        icon.classList.remove('bi-bookmark-fill');
+                        icon.classList.add('bi-bookmark');
+                    }
+
+                } catch (error) {
+                    console.error('Error saving post:', error);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
