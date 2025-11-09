@@ -131,19 +131,41 @@
             @if($profileUser->bio)
                 <p class="mb-2">{{ $profileUser->bio }}</p>
             @else
-                <p class="text-muted mb-2">Belum ada bio.</p>
+                <p class="text-white mb-2">Belum ada bio.</p>
             @endif
         </div>
-        <div class="d-grid gap-2 mt-3">
+          <div class="d-flex gap-2 mt-3">
             @if ($authUser->id == $profileUser->id)
-                <a href="{{ url('/edit-profile') }}" class="btn btn-outline-secondary">Edit Profil</a>
+                <a href="{{ url('/edit-profile') }}" class="btn btn-outline-secondary w-100">Edit Profil</a>
             @else
-                <form class="follow-form" action="{{ route('follow.toggle', $profileUser) }}" method="POST">
+                <form class="follow-form flex-grow-1" action="{{ route('follow.toggle', $profileUser) }}" method="POST">
                     @csrf
                     <button type="submit" class="btn {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }} w-100">
                         <span id="follow-text">{{ $isFollowing ? 'Mengikuti' : 'Ikuti' }}</span>
                     </button>
                 </form>
+                
+                @php
+                    // Tentukan hak akses admin
+                    $isAdmin = in_array($authUser->role, ['admin', 'super_admin', 'owner']);
+                    
+                    // Tentukan hak akses target
+                    $targetIsAdminOrHigher = in_array($profileUser->role, ['admin', 'super_admin', 'owner']);
+                    
+                    // Super_admin bisa ban admin, tapi admin tidak bisa ban admin
+                    $canBan = $isAdmin;
+                    if ($authUser->role == 'admin' && $targetIsAdminOrHigher) $canBan = false;
+                    if ($authUser->role == 'super_admin' && in_array($profileUser->role, ['super_admin', 'owner'])) $canBan = false;
+
+                @endphp
+                
+                @if ($canBan)
+                <button class="btn btn-outline-secondary" title="Opsi Moderasi" 
+                        data-bs-toggle="modal" data-bs-target="#banUserModal">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                @endif
+                
             @endif
         </div>
     </div>
@@ -241,6 +263,49 @@
             </div>
         @endif
     </div>
+@if (isset($canBan) && $canBan)
+<div class="modal fade" id="banUserModal" tabindex="-1" aria-labelledby="banUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            
+            <form action="{{ route('moderation.ban', $profileUser) }}" method="POST">
+                @csrf
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="banUserModalLabel">Ban User: {{ $profileUser->name }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Pilih Durasi Ban:</label>
+                        <select class="form-select bg-dark-subtle text-muted" id="duration" name="duration">
+                            <option value="1_day">1 Hari</option>
+                            <option value="7_day">7 Hari</option>
+                            <option value="30_day">30 Hari</option>
+                            <option value="permanent">Permanen</option>
+                        </select>
+                    </div>
 
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Alasan (Opsional):</label>
+                        <textarea class="form-control bg-dark-subtle text-muted" id="reason" name="reason" rows="3"></textarea>
+                    </div>
+                    
+                    <p class="text-danger small">
+                        Perhatian: Mem-ban user akan mencegah mereka untuk login. Ini tidak akan menghapus konten mereka.
+                    </p>
+
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Terapkan Ban</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
 </div>
+@endif
+</div>
+
 @endsection

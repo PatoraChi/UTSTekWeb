@@ -7,17 +7,55 @@
             <strong class="ms-2">{{ $post->user->name }}</strong>
         </a>
 
-        @if ($post->user_id == $user->id)
-            <div class="dropdown ms-auto">
+        <small class="text-white ms-auto">{{ $post->created_at->diffForHumans() }}</small>
+
+        @php
+            // $user adalah user yang sedang login (diumpan dari controller)
+            $isOwner = $post->user_id == $user->id;
+            $isAdmin = in_array($user->role, ['admin', 'super_admin', 'owner']);
+            
+            // --- LOGIKA HIERARKI BARU ---
+            $canDelete = false;
+            if ($isOwner) {
+                $canDelete = true;
+            } 
+            // Jika bukan pemilik, cek apakah user adalah admin
+            elseif ($isAdmin) {
+                $authRole = $user->role;
+                $targetRole = $post->user->role; // Role pemilik postingan
+
+                // Admin tidak bisa hapus admin lain atau lebih tinggi
+                if ($authRole == 'admin' && in_array($targetRole, ['admin', 'super_admin', 'owner'])) {
+                    $canDelete = false;
+                }
+                // Super_admin tidak bisa hapus super_admin lain atau owner
+                elseif ($authRole == 'super_admin' && in_array($targetRole, ['super_admin', 'owner'])) {
+                    $canDelete = false;
+                }
+                // Jika lolos (misal: Owner hapus Admin, atau Admin hapus User)
+                else {
+                    $canDelete = true;
+                }
+            }
+            // --- AKHIR LOGIKA HIERARKI ---
+        @endphp
+
+        @if ($isOwner || $canDelete)
+            <div class="dropdown ms-2">
                 <a href="#" class="text-decoration-none text-white" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-three-dots fs-5"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                    
+                    @if ($isOwner)
                     <li>
                         <a class="dropdown-item" href="{{ route('post.edit', $post) }}">
                             <i class="bi bi-pencil-square me-2"></i>Edit Caption
                         </a>
                     </li>
+                    @endif
+
+                    @if ($canDelete)
                     <li>
                         <form action="{{ route('post.destroy', $post) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus postingan ini?');">
                             @csrf
@@ -27,13 +65,11 @@
                             </button>
                         </form>
                     </li>
+                    @endif
                 </ul>
             </div>
-            <small class="text-white ms-2">{{ $post->created_at->diffForHumans() }}</small>
-        @else
-            <small class="text-white ms-auto">{{ $post->created_at->diffForHumans() }}</small>
         @endif
-        </div>
+    </div>
 
     <div class="post-media">
         @foreach ($post->media as $media)
@@ -49,9 +85,7 @@
     </div>
     
     <div class="post-actions">
-
         @php
-            // $user didapat dari Controller (Home dan PostController@show)
             $isLiked = $post->likes->contains('user_id', $user->id);
             $isSaved = $post->saves->contains('user_id', $user->id);
         @endphp
@@ -64,13 +98,11 @@
                 </i>
             </button>
         </form>
-
         <span id="like-count-{{ $post->id }}" class="fw-bold ms-2">{{ $post->likes->count() }}</span>
         
         <a href="{{ url('/post/' . $post->id) }}" style="color: inherit; text-decoration: none;">
             <i class="bi bi-chat-dots ms-3"></i>
         </a>
-
         <span class="fw-bold ms-2" style="font-size: 1rem;">
             {{ $post->all_comments_count }}
         </span>
@@ -83,7 +115,6 @@
                 </i>
             </button>
         </form>
-
     </div>
 
     <div class="post-caption">

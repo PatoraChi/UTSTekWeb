@@ -32,12 +32,43 @@
 
         <p class="mb-1">{{ $comment->body }}</p>
 
-            <a href="#" class="text-decoration-none me-2" data-bs-toggle="collapse" 
-                data-bs-target="#reply-form-{{ $comment->id }}">Balas</a>
+        @php
+            // $user adalah user yang sedang login
+            $isOwner = $comment->user_id == $user->id;
+            $isAdmin = in_array($user->role, ['admin', 'super_admin', 'owner']);
 
-            @if ($comment->user_id == $user->id)
+            // --- LOGIKA HIERARKI BARU ---
+            $canDelete = false;
+            if ($isOwner) {
+                $canDelete = true;
+            } 
+            // Jika bukan pemilik, cek apakah user adalah admin
+            elseif ($isAdmin) {
+                $authRole = $user->role;
+                $targetRole = $comment->user->role; // Role pemilik komentar
+
+                if ($authRole == 'admin' && in_array($targetRole, ['admin', 'super_admin', 'owner'])) {
+                    $canDelete = false;
+                }
+                elseif ($authRole == 'super_admin' && in_array($targetRole, ['super_admin', 'owner'])) {
+                    $canDelete = false;
+                }
+                else {
+                    $canDelete = true; 
+                }
+            }
+            // --- AKHIR LOGIKA HIERARKI ---
+        @endphp
+
+        <div class="comment-actions d-flex align-items-center">
+            <a href="#" class="text-decoration-none me-2" data-bs-toggle="collapse" 
+               data-bs-target="#reply-form-{{ $comment->id }}">Balas</a>
+
+            @if ($isOwner)
                 <a href="{{ route('comment.edit', $comment) }}" class="text-decoration-none text-white me-2">Edit</a>
-                
+            @endif
+            
+            @if ($canDelete)
                 <form action="{{ route('comment.destroy', $comment) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus komentar ini? Semua balasan akan ikut terhapus.');">
                     @csrf
                     @method('DELETE')
@@ -47,18 +78,19 @@
                     </button>
                 </form>
             @endif
-                @if ($comment->replies->count() > 0)
-            <a href="#" class="text-decoration-none" data-bs-toggle="collapse" 
-               data-bs-target="#replies-{{ $comment->id }}">
-               Tampilkan {{ $comment->replies->count() }} balasan
-            </a>
-        @endif
-
+            
+            @if ($comment->replies->count() > 0)
+                <a href="#" class="text-decoration-none ms-auto" data-bs-toggle="collapse" 
+                   data-bs-target="#replies-{{ $comment->id }}">
+                    Tampilkan {{ $comment->replies->count() }} balasan
+                </a>
+            @endif
+        </div>
+        
         <div class="collapse mt-2" id="reply-form-{{ $comment->id }}">
             <form action="{{ url('/post/' . $post->id . '/comment') }}" method="POST" class="d-flex align-items-start">
                 @csrf
                 <input type="hidden" name="parent_id" value="{{ $comment->id }}">
-                
                 <textarea name="body" class="form-control me-2" rows="1" placeholder="Balas komentar..."></textarea>
                 <button type="submit" class="btn btn-sm btn-primary">Balas</button>
             </form>

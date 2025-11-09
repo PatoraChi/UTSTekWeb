@@ -127,18 +127,51 @@ class CommentController extends Controller
         if (!Session::has('user')) {
             return redirect('/login');
         }
+        
+        $authUser = User::find(Session::get('user.id'));
+        if (!$authUser) {
+            return redirect('/login');
+        }
 
-        // PENTING: Cek Otorisasi
-        if ($comment->user_id !== Session::get('user.id')) {
+        // Ambil pemilik komentar
+        $commentOwner = $comment->user;
+
+        // --- LOGIKA OTORISASI BARU (DENGAN HIERARKI) ---
+
+        // 1. Cek apakah user adalah pemilik
+        if ($authUser->id == $commentOwner->id) {
+            // Pemilik boleh menghapus, lanjutkan
+        }
+        // 2. Jika bukan pemilik, cek apakah user adalah admin
+        elseif (in_array($authUser->role, ['admin', 'super_admin', 'owner'])) {
+
+            // User adalah admin, sekarang cek hierarki
+            $authRole = $authUser->role;
+            $targetRole = $commentOwner->role;
+
+            // Admin tidak bisa hapus admin lain atau lebih tinggi
+            if ($authRole == 'admin' && in_array($targetRole, ['admin', 'super_admin', 'owner'])) {
+                abort(403, 'Anda tidak punya hak akses untuk menghapus konten milik role yang setara atau lebih tinggi.');
+            }
+            
+            // Super_admin tidak bisa hapus super_admin lain atau owner
+            if ($authRole == 'super_admin' && in_array($targetRole, ['super_admin', 'owner'])) {
+                abort(403, 'Anda tidak punya hak akses untuk menghapus konten milik role yang setara atau lebih tinggi.');
+            }
+            
+            // Jika lolos, lanjutkan
+        }
+        // 3. Jika bukan pemilik DAN bukan admin
+        else {
             abort(403, 'ANDA TIDAK PUNYA HAK AKSES');
         }
+        // --- AKHIR LOGIKA BARU ---
+
 
         // Simpan post_id untuk redirect SEBELUM dihapus
         $postId = $comment->post_id;
 
         // Panggil delete.
-        // Sisanya (hapus like & balasan) akan diurus
-        // oleh 'deleting' event di Model Comment.php.
         $comment->delete();
 
         // 4. Kembali ke halaman postingan

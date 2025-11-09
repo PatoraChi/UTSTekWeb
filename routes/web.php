@@ -21,6 +21,8 @@ use App\Http\Controllers\TopicController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\ModerationController;
+use App\Http\Controllers\AdminController;
 /*
 |--------------------------------------------------------------------------
 | Halaman Utama
@@ -84,8 +86,23 @@ Route::post('/login', function (Request $request) {
         return back()->with('error', 'Password salah.');
     }
 
-    if ($user->is_banned ?? false) {
-        return back()->with('error', 'Akun Anda diblokir.');
+    if ($user->is_banned) {
+        // Cek apakah ban-nya permanen (banned_until == NULL)
+        if (is_null($user->banned_until)) {
+            return back()->with('error', 'Akun Anda telah diblokir secara permanen.');
+        }
+        
+        // Cek apakah ban-nya temporer dan masih aktif
+        // Kita butuh 'use Carbon\Carbon;' di atas file, tapi 'now()' juga bisa
+        if (now()->lessThan($user->banned_until)) {
+            // Menggunakan ->diffForHumans() untuk 'dalam 3 hari lagi'
+            return back()->with('error', 'Akun Anda ditangguhkan. Sisa waktu: ' . now()->diffForHumans($user->banned_until, true));
+        }
+        
+        // Jika ban-nya temporer dan sudah lewat, un-ban user-nya
+        $user->is_banned = false;
+        $user->banned_until = null;
+        $user->save();
     }
 
     // Simpan session user (tanpa sistem Auth Laravel)
@@ -297,3 +314,28 @@ Route::get('/cari', [SearchController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 Route::get('/notifikasi', [NotificationController::class, 'index']);
+
+/*
+|--------------------------------------------------------------------------
+| Fitur Moderasi (Khusus Admin)
+|--------------------------------------------------------------------------
+*/
+// Gunakan middleware 'admin' yang sudah kita daftarkan
+Route::middleware('admin')->group(function () {
+    
+    // Route untuk memproses ban user
+    Route::post('/moderation/ban/{profile}', [ModerationController::class, 'banUser'])
+        ->name('moderation.ban');
+    
+    // 1. Menampilkan halaman "Manajemen User"
+    Route::get('/admin/users', [AdminController::class, 'listUsers'])
+        ->name('admin.users.list');
+
+    // 2. Memproses perubahan role
+    Route::post('/admin/users/{user}/update-role', [AdminController::class, 'updateRole'])
+        ->name('admin.users.update_role');
+
+    Route::post('/admin/users/{user}/manage-ban', [AdminController::class, 'manageBan'])
+        ->name('admin.users.manage_ban');
+
+});

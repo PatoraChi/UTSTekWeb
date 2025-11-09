@@ -188,23 +188,56 @@ class PostController extends Controller
         /**
          * Menghapus postingan.
          */
-        public function destroy(Post $post)
-        {
-            if (!Session::has('user')) {
-                return redirect('/login');
-            }
-
-            // PENTING: Cek Otorisasi
-            if ($post->user_id !== Session::get('user.id')) {
-                abort(403, 'ANDA TIDAK PUNYA HAK AKSES');
-            }
-
-            // Panggil delete.
-            // Sisanya (hapus file, like, comment, dll) akan diurus
-            // oleh 'deleting' event di Model Post.php.
-            $post->delete();
-
-            // 4. Kembali ke halaman home
-            return redirect('/')->with('success', 'Postingan telah dihapus.');
+    public function destroy(Post $post)
+    {
+        if (!Session::has('user')) {
+            return redirect('/login');
         }
+
+        $authUser = User::find(Session::get('user.id'));
+        if (!$authUser) {
+            return redirect('/login');
+        }
+
+        // Ambil pemilik postingan
+        // Kita butuh relasi 'user' dimuat, kita bisa 'lazy load'
+        $postOwner = $post->user; 
+
+        // --- LOGIKA OTORISASI BARU (DENGAN HIERARKI) ---
+        
+        // 1. Cek apakah user adalah pemilik
+        if ($authUser->id == $postOwner->id) {
+            // Pemilik boleh menghapus, lanjutkan ke proses delete
+        } 
+        // 2. Jika bukan pemilik, cek apakah user adalah admin
+        elseif (in_array($authUser->role, ['admin', 'super_admin', 'owner'])) {
+            
+            // User adalah admin, sekarang cek hierarki
+            $authRole = $authUser->role;
+            $targetRole = $postOwner->role;
+
+            // Admin tidak bisa hapus admin lain atau lebih tinggi
+            if ($authRole == 'admin' && in_array($targetRole, ['admin', 'super_admin', 'owner'])) {
+                abort(403, 'Anda tidak punya hak akses untuk menghapus konten milik role yang setara atau lebih tinggi.');
+            }
+            
+            // Super_admin tidak bisa hapus super_admin lain atau owner
+            if ($authRole == 'super_admin' && in_array($targetRole, ['super_admin', 'owner'])) {
+                abort(403, 'Anda tidak punya hak akses untuk menghapus konten milik role yang setara atau lebih tinggi.');
+            }
+            
+            // Jika lolos (misal: Owner hapus Admin, atau Admin hapus User), lanjutkan
+        } 
+        // 3. Jika bukan pemilik DAN bukan admin
+        else {
+            abort(403, 'ANDA TIDAK PUNYA HAK AKSES');
+        }
+        // --- AKHIR LOGIKA BARU ---
+
+        
+        // Panggil delete.
+        $post->delete();
+
+        return back()->with('success', 'Postingan telah dihapus.');
+    }
 }

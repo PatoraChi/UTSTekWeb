@@ -100,6 +100,14 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
                             <li><a class="dropdown-item" href="{{ url('/profile') }}"><i class="bi bi-person me-2"></i>Profil Saya</a></li>
                             <li><a class="dropdown-item" href="{{ url('/edit-profile') }}"><i class="bi bi-pencil-square me-2"></i>Edit Profil</a></li>
+                                @if (in_array($user->role, ['admin', 'super_admin', 'owner']))
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-warning" href="{{ route('admin.users.list') }}">
+                                            <i class="bi bi-shield-lock me-2"></i>Panel Admin
+                                        </a>
+                                    </li>
+                                @endif
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger" href="{{ url('/logout') }}">

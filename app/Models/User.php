@@ -24,6 +24,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Auth
         'password',
         'bio',
         'profile_image',
+        'role', 
+        'is_banned',
+        'banned_until', 
     ];
 
     /**
@@ -46,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;class User extends Auth
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'banned_until' => 'datetime',
         ];
     }
     public function likes(): HasMany
