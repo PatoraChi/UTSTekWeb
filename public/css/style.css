@@ -93,3 +93,98 @@ body {
         margin: 0;
     }
 }
+/*
+|--------------------------------------------------------------------------
+| CSS untuk Layout Home & Postingan
+|--------------------------------------------------------------------------
+*/
+
+/* Konten utama kita buat jadi flexbox */
+.main-content {
+    display: flex;
+    flex-direction: row;
+    /* 100% tinggi layar dikurangi tinggi navbar-custom Anda (approx 56px) */
+    height: calc(100vh - 56px); 
+    margin-top: 56px; /* Sesuaikan dengan tinggi navbar-custom Anda */
+}
+
+/* Kolom Kiri (Feed) */
+.feed-column {
+    flex: 1; /* Ambil sisa ruang */
+    overflow-y: auto; /* KUNCI: Hanya kolom ini yang bisa di-scroll */
+    padding: 20px;
+}
+
+/* Kolom Kanan (Rekomendasi) */
+.recommendation-column {
+    width: 300px; /* Lebar kolom kanan */
+    padding: 20px;
+    border-left: 1px solid #eee;
+    background-color: #f8f9fa;
+    /* KUNCI: Tetap di tempat saat di-scroll */
+    position: sticky; 
+    top: 56px; /* Nempel di bawah navbar */
+    height: calc(100vh - 56px); /* Tinggi penuh */
+}
+
+/*
+|--------------------------------------------------------------------------
+| CSS untuk Kartu Postingan (Post Card)
+|--------------------------------------------------------------------------
+*/
+.post-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    overflow: hidden; /* Agar gambar tidak keluar dari card */
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: #000;
+}
+
+.post-header img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    
+}
+
+.post-media img,
+.post-media video {
+    width: 100%;
+    height: auto;
+    max-height: 600px; /* Batasi tinggi media */
+    object-fit: contain; /* Tampilkan penuh tanpa distorsi */
+    background-color: #000;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.post-actions {
+    display: flex; /* Membuat icon bookmark bisa ke kanan */
+    align-items: center;
+    padding: 10px 15px;
+    font-size: 1.5rem; /* Ukuran icon */
+}
+
+.post-actions i {
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+/* Ini untuk menargetkan icon yang punya class 'ms-auto' (bookmark) */
+.post-actions i.ms-auto {
+    margin-right: 0; 
+}
+
+.post-caption {
+    padding: 0 15px 15px 15px;
+    color: #000;
+}

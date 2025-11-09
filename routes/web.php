@@ -11,6 +11,9 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\VerifyCodeController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PostController;
+use App\Models\Post;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -23,19 +26,22 @@ Route::get('/', function () {
         return redirect('/login');
     }
 
-    // Ambil data user LENGKAP dari database
     $user = User::find(Session::get('user.id'));
 
-    // Jika user tidak ditemukan (mungkin session 'basi'), logout paksa
     if (!$user) {
         Session::forget('user');
         return redirect('/login');
     }
 
-    // Kirim data user ke view 'home'
-    return view('home', compact('user'));
-});
+    // AMBIL SEMUA POSTINGAN DARI DATABASE
+    // Kita pakai 'with' (Eager Loading) agar lebih efisien
+    // Kita ambil juga data 'user' (pemilik post) dan 'media' (file-filenya)
+    // Diurutkan dari yang paling baru (latest)
+    $posts = Post::with(['user', 'media'])->latest()->get();
 
+    // KIRIM DATA $user dan $posts KE VIEW
+    return view('home', compact('user', 'posts'));
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -196,3 +202,15 @@ Route::group(['prefix' => '', 'middleware' => 'web'], function () {
     Route::post('/edit-profile', [ProfileController::class, 'update'])
          ->name('profile.update');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Fitur Postingan (Buat & Simpan)
+|--------------------------------------------------------------------------
+*/
+
+// Tampilkan halaman form 'Buat'
+Route::get('/post/create', [PostController::class, 'create']);
+
+// Proses simpan data dari form 'Buat'
+Route::post('/post/store', [PostController::class, 'store']);
