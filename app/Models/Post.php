@@ -2,22 +2,40 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory; // 1. Tambahkan ini
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // 2. Tambahkan ini
-use Illuminate\Database\Eloquent\Relations\HasMany; // 3. Tambahkan ini
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
-    use HasFactory; // 4. Tambahkan ini
+    use HasFactory; 
 
-    /**
-     * 5. INI PERBAIKAN UTAMANYA:
-     * Tentukan kolom mana yang boleh diisi saat menggunakan Post::create()
-     */
     protected $fillable = ['user_id', 'caption'];
 
+    /**
+     * TAMBAHKAN SELURUH BLOK INI (Method 'booted')
+     * Ini adalah "magic" untuk cascading delete.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Post $post) {
+            
+            // 1. Hapus semua file media dari storage
+            foreach ($post->media as $media) {
+                Storage::disk('public')->delete($media->file_path);
+            }
+
+            // 2. Hapus relasi database (ini akan menghapus record di tabel lain)
+            $post->media()->delete();
+            $post->likes()->delete();
+            $post->saves()->delete();
+            $post->allComments()->delete(); // Hapus semua komentar & balasan
+            $post->tags()->detach(); // Hapus relasi di tabel post_tag
+        });
+    }
 
     /**
      * Relasi: Postingan ini milik satu User.
@@ -27,6 +45,9 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
+    // ... (sisa relasi media, tags, likes, saves, comments, allComments) ...
+    // ... (biarkan seperti sedia kala) ...
+    
     /**
      * Relasi: Postingan ini punya banyak Media.
      */
@@ -52,5 +73,18 @@ class Post extends Model
     public function saves(): HasMany
     {
         return $this->hasMany(Save::class);
+    }
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->whereNull('parent_id');
+    }
+    /**
+     * Relasi: Postingan ini punya banyak Komentar (TERMASUK BALASAN).
+     * Ini khusus untuk menghitung total.
+     */
+    public function allComments(): HasMany
+    {
+        // Tidak pakai whereNull('parent_id')
+        return $this->hasMany(Comment::class);
     }
 }

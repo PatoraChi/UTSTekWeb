@@ -52,18 +52,7 @@ body {
 
 /* Navbar */
 .navbar-custom {
-    background-color: #0d0f10;
-    border-bottom: 1px solid #2c2f33;
-    height: 60px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 220px;
-    right: 0;
-    padding-right: 20px;
-    z-index: 10;
+    margin-bottom: 10px;
 }
 
 .profile-img {
@@ -105,8 +94,8 @@ body {
     display: flex;
     flex-direction: row;
     /* 100% tinggi layar dikurangi tinggi navbar-custom Anda (approx 56px) */
-    height: calc(100vh - 56px); 
-    margin-top: 56px; /* Sesuaikan dengan tinggi navbar-custom Anda */
+    height: calc(100vh); 
+    margin-top: 0px; /* Sesuaikan dengan tinggi navbar-custom Anda */
 }
 
 /* Kolom Kiri (Feed) */
@@ -196,3 +185,4 @@ body {
     padding: 0 15px 15px 15px;
     color: #ffffff;
 }
+

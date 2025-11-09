@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\User;
 use App\Models\PostMedia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session; // Penting untuk session custom Anda
@@ -97,4 +98,107 @@ class PostController extends Controller
         // 5. Kembali ke Halaman Utama
         return redirect('/')->with('success', 'Postingan berhasil dibuat!');
     }
+    public function show(Post $post)
+        {
+            if (!Session::has('user')) {
+                return redirect('/login');
+            }
+
+            // Ambil data user yang sedang login
+            $user = User::find(Session::get('user.id'));
+
+            // Load relasi post (seperti di Home)
+            $post->load(['user', 'media', 'likes', 'saves']);
+            
+            // Load komentar (hanya top-level) dan relasi nested-nya
+            $comments = $post->comments()
+                            ->with('user', 'likes', 'parent.user', 'replies')
+                            ->latest() // Tampilkan komentar terbaru di atas
+                            ->get();
+
+            return view('posts.show', compact('user', 'post', 'comments'));
+        }
+        /**
+         * Menampilkan form untuk mengedit postingan.
+         */
+        public function edit(Post $post)
+        {
+            if (!Session::has('user')) {
+                return redirect('/login');
+            }
+
+            // PENTING: Cek Otorisasi
+            // Apakah user yang login adalah pemilik post ini?
+            if ($post->user_id !== Session::get('user.id')) {
+                abort(403, 'ANDA TIDAK PUNYA HAK AKSES');
+            }
+
+            // Kirim data post ke view 'posts.edit'
+            return view('posts.edit', compact('post'));
+        }
+        /**
+         * Menyimpan perubahan (update) caption postingan.
+         */
+        public function update(Request $request, Post $post)
+        {
+            if (!Session::has('user')) {
+                return redirect('/login');
+            }
+
+            // PENTING: Cek Otorisasi
+            if ($post->user_id !== Session::get('user.id')) {
+                abort(403, 'ANDA TIDAK PUNYA HAK AKSES');
+            }
+
+            // 1. Validasi (hanya caption)
+            $request->validate([
+                'caption' => 'nullable|string|max:2000',
+            ]);
+
+            // 2. Update caption di database
+            $post->update([
+                'caption' => $request->caption,
+            ]);
+
+            // 3. Proses dan Update Hashtag (Sama seperti di method store)
+            preg_match_all('/#([a-zA-Z0-9_]+)/', $request->caption, $matches);
+            
+            $tagIds = [];
+            if (!empty($matches[1])) {
+                $tagNames = $matches[1];
+                foreach ($tagNames as $tagName) {
+                    $tag = Tag::firstOrCreate(['name' => strtolower($tagName)]);
+                    $tagIds[] = $tag->id;
+                }
+            }
+
+            // 'sync' akan otomatis menambah/menghapus tag yang berubah
+            $post->tags()->sync($tagIds);
+
+            // 4. Kembali ke halaman home
+            return redirect('/')->with('success', 'Caption berhasil diperbarui!');
+        }
+
+        /**
+         * Menghapus postingan.
+         */
+        public function destroy(Post $post)
+        {
+            if (!Session::has('user')) {
+                return redirect('/login');
+            }
+
+            // PENTING: Cek Otorisasi
+            if ($post->user_id !== Session::get('user.id')) {
+                abort(403, 'ANDA TIDAK PUNYA HAK AKSES');
+            }
+
+            // Panggil delete.
+            // Sisanya (hapus file, like, comment, dll) akan diurus
+            // oleh 'deleting' event di Model Post.php.
+            $post->delete();
+
+            // 4. Kembali ke halaman home
+            return redirect('/')->with('success', 'Postingan telah dihapus.');
+        }
 }
