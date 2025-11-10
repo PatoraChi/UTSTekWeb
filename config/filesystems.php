@@ -39,6 +39,9 @@ return [
         ],
         'cloudinary' => [
             'driver' => 'cloudinary',
+            'cloud_name' => env('doomv76v5'),
+            'api_key' => env('882854312213525'),
+            'api_secret' => env('dOkMSnbwq0X-0mcK59KnOYaYD3Y'),
         ],
         'public' => [
             'driver' => 'local',
