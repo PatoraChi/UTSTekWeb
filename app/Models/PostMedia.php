@@ -18,10 +18,9 @@ class PostMedia extends Model
     protected static function booted(): void
     {
         static::deleting(function (PostMedia $media) {
-            // ✅ PERUBAHAN DI SINI
-            // Hapus file dari disk 'public'
+            // ✅ KEMBALI KE CLOUDINARY
             if ($media->file_path) {
-                Storage::disk('public')->delete($media->file_path);
+                Storage::disk('cloudinary')->delete($media->file_path);
             }
         });
     }
@@ -38,10 +37,9 @@ class PostMedia extends Model
     protected function url(): Attribute
     {
         return Attribute::make(
-            // ✅ PERUBAHAN DI SINI
-            // Arahkan ke URL public storage
-            // Ini akan menghasilkan: http://127.0.0.1:8000/storage/path/ke/file.jpg
-            get: fn () => asset('storage/' . $this->file_path),
+            // ✅ KEMBALI KE CLOUDINARY
+            // Ini akan menghasilkan URL https://res.cloudinary.com/...
+            get: fn () => Storage::disk('cloudinary')->url($this->file_path),
         );
     }
 }

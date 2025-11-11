@@ -138,12 +138,13 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: fn () => $this->profile_image
-                // ✅ PERUBAHAN DI SINI
+                // ✅ KEMBALI KE CLOUDINARY
                 // Jika user PUNYA foto profil:
-                ? asset('storage/' . $this->profile_image) // <-- Arahkan ke 'storage/profiles/gambar.jpg'
+                ? Storage::disk('cloudinary')->url($this->profile_image)
                 
                 // Jika user TIDAK PUNYA foto profil:
-                : asset('images/default_avatar.png') // <-- Pastikan Anda punya file ini di public/images/
+                // (Pastikan file ini ada di public/images/ dan ter-upload ke Git)
+                : asset('images/default_avatar.png') 
         );
     }
 }

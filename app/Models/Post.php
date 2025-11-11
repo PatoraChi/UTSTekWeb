@@ -28,7 +28,7 @@ protected static function booted(): void
                 // ✅ PERUBAHAN DI SINI
                 // Pastikan file_path ada dan hapus dari disk 'public'
                 if ($media->file_path) {
-                    Storage::disk('public')->delete($media->file_path);
+                    Storage::disk('cloudinary')->delete($media->file_path);
                 }
             }
 

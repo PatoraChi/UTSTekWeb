@@ -124,15 +124,14 @@ public function update(Request $request)
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // ✅ PERUBAHAN DI SINI
         if ($request->hasFile('profile_image')) {
-            // Gunakan disk 'public'
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
+            // ✅ KEMBALI KE CLOUDINARY
+            if ($user->profile_image && Storage::disk('cloudinary')->exists($user->profile_image)) {
+                Storage::disk('cloudinary')->delete($user->profile_image);
             }
 
-            // Simpan ke 'storage/app/public/profiles'
-            $path = $request->file('profile_image')->store('profiles', 'public');
+            // Simpan ke Cloudinary (di folder 'profiles')
+            $path = $request->file('profile_image')->store('profiles', 'cloudinary');
             $user->profile_image = $path;
         }
 
