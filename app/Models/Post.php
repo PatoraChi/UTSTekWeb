@@ -19,21 +19,25 @@ class Post extends Model
      * TAMBAHKAN SELURUH BLOK INI (Method 'booted')
      * Ini adalah "magic" untuk cascading delete.
      */
-    protected static function booted(): void
+protected static function booted(): void
     {
         static::deleting(function (Post $post) {
             
             // 1. Hapus semua file media dari storage
             foreach ($post->media as $media) {
-                Storage::disk('cloudinary')->delete($media->file_path);
+                // ✅ PERUBAHAN DI SINI
+                // Pastikan file_path ada dan hapus dari disk 'public'
+                if ($media->file_path) {
+                    Storage::disk('public')->delete($media->file_path);
+                }
             }
 
-            // 2. Hapus relasi database (ini akan menghapus record di tabel lain)
+            // 2. Hapus relasi database
             $post->media()->delete();
             $post->likes()->delete();
             $post->saves()->delete();
-            $post->allComments()->delete(); // Hapus semua komentar & balasan
-            $post->tags()->detach(); // Hapus relasi di tabel post_tag
+            $post->allComments()->delete();
+            $post->tags()->detach(); 
         });
     }
 

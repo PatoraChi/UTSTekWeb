@@ -33,7 +33,7 @@
             @forelse ($usersResult as $foundUser)
                 <div class="d-flex align-items-center mb-3 p-3 bg-dark rounded">
                     <a href="{{ route('profile.show.user', $foundUser) }}">
-                        <img src="{{ $notif->sender->profile_image_url }}"
+                        <img src="{{ $foundUser->profile_image_url }}"
                              alt="profil" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
                     </a>
                     <div class="flex-grow-1">

@@ -108,8 +108,7 @@ class ProfileController extends Controller
 
         return view('profile.edit', compact('user'));
     }
-
-    public function update(Request $request)
+public function update(Request $request)
     {
         $sessionUser = Session::get('user');
 
@@ -117,7 +116,7 @@ class ProfileController extends Controller
             return redirect('/login');
         }
 
-        $user = User::find($sessionUser['id']); // ✅ Pastikan ini model User
+        $user = User::find($sessionUser['id']); 
 
         $request->validate([
             'name' => 'required|string|max:100',
@@ -125,13 +124,15 @@ class ProfileController extends Controller
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // ✅ Upload foto profil
+        // ✅ PERUBAHAN DI SINI
         if ($request->hasFile('profile_image')) {
-            if ($user->profile_image && Storage::disk('cloudinary')->exists($user->profile_image)) {
-                Storage::disk('cloudinary')->delete($user->profile_image);
+            // Gunakan disk 'public'
+            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
+                Storage::disk('public')->delete($user->profile_image);
             }
 
-            $path = $request->file('profile_image')->store('profiles', 'cloudinary');
+            // Simpan ke 'storage/app/public/profiles'
+            $path = $request->file('profile_image')->store('profiles', 'public');
             $user->profile_image = $path;
         }
 
@@ -140,7 +141,7 @@ class ProfileController extends Controller
         $user->bio = $request->bio;
         $user->save();
 
-        // ✅ Perbarui session juga agar nama di navbar ikut berubah
+        // ✅ Perbarui session juga
         Session::put('user', [
             'id' => $user->id,
             'name' => $user->name,

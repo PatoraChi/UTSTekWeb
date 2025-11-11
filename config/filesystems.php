@@ -38,10 +38,14 @@ return [
             'report' => false,
         ],
         'cloudinary' => [
-            'driver' => 'cloudinary',
-            'cloud_name' => env('doomv76v5'),
-            'api_key' => env('882854312213525'),
-            'api_secret' => env('dOkMSnbwq0X-0mcK59KnOYaYD3Y'),
+            'driver'     => 'cloudinary',
+            'api_key'    => env('CLOUDINARY_API_KEY'),
+            'api_secret' => env('CLOUDINARY_API_SECRET'),
+            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+            'storage_type' => 'image', // Anda bisa ganti 'auto' jika menyimpan video juga
+            'url'        => [
+                'secure' => true, // Selalu gunakan https
+            ],
         ],
         'public' => [
             'driver' => 'local',
@@ -63,13 +67,6 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
-        ],
-        'cloudinary' => [
-            'driver' => 'cloudinary',
-            'storage_type' => 'image', // Bisa juga 'video' atau 'auto'
-            'url' => [
-            'secure' => true
-            ]
         ],
 
     ],

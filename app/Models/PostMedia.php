@@ -14,12 +14,15 @@ class PostMedia extends Model
 
     protected $fillable = ['post_id', 'file_path', 'file_type'];
 
-    // Menghapus file dari Cloudinary saat record PostMedia dihapus
+    // Menghapus file dari storage saat record PostMedia dihapus
     protected static function booted(): void
     {
         static::deleting(function (PostMedia $media) {
-            // Hapus file dari Cloudinary
-            Storage::disk('cloudinary')->delete($media->file_path);
+            // ✅ PERUBAHAN DI SINI
+            // Hapus file dari disk 'public'
+            if ($media->file_path) {
+                Storage::disk('public')->delete($media->file_path);
+            }
         });
     }
 
@@ -35,7 +38,10 @@ class PostMedia extends Model
     protected function url(): Attribute
     {
         return Attribute::make(
-            get: fn () => Storage::disk('cloudinary')->url($this->file_path),
+            // ✅ PERUBAHAN DI SINI
+            // Arahkan ke URL public storage
+            // Ini akan menghasilkan: http://127.0.0.1:8000/storage/path/ke/file.jpg
+            get: fn () => asset('storage/' . $this->file_path),
         );
     }
 }

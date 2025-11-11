@@ -63,7 +63,7 @@ class PostController extends Controller
                 
                 
                 // Nama file akan di-hash (random) agar unik
-                $path = $file->store('posts', 'cloudinary');
+                $path = $file->store('posts', 'public');
 
                 // Simpan info file ke tabel post_media
                 PostMedia::create([

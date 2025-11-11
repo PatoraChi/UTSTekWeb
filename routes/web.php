@@ -23,12 +23,25 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Config;
 /*
 |--------------------------------------------------------------------------
 | Halaman Utama
 |--------------------------------------------------------------------------
 */
-
+Route::get('/debug-env', function () {
+    // Hentikan eksekusi dan tampilkan SEMUA yang kita tahu
+    dd([
+        '1. env_api_key' => env('CLOUDINARY_API_KEY'),
+        '2. env_cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+        
+        '3. config_filesystems_key' => config('filesystems.disks.cloudinary.api_key'),
+        
+        // INI TES YANG PALING PENTING
+        '4. config_cloudinary_key' => config('cloudinary.cloud.api_key'),
+        '5. config_cloudinary_name' => config('cloudinary.cloud.cloud_name')
+    ]);
+});
 Route::get('/', function () {
     if (!Session::has('user')) {
         return redirect('/login');
