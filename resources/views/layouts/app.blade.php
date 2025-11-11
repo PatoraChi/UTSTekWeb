@@ -333,6 +333,51 @@
                 }
             });
         });
+    // --- 4. LOGIKA UNTUK LIKE KOMENTAR (BARU) ---
+    // Cari SEMUA form 'comment-like-form' di halaman
+    document.querySelectorAll('.comment-like-form').forEach(form => {
+        form.addEventListener('submit', async function (event) {
+            // Hentikan refresh halaman
+            event.preventDefault(); 
+
+            const url = this.action;
+            // Ambil ID komentar dari URL. Cth: /comment/123/toggle-like
+            const commentId = url.split('/')[4]; 
+            
+            try {
+                // Kirim request ke server di 'background'
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                });
+
+                const data = await response.json();
+
+                // Cari elemen ikon dan angka yang SPESIFIK untuk komentar ini
+                const icon = document.getElementById('comment-like-icon-' + commentId);
+                const count = document.getElementById('comment-like-count-' + commentId);
+
+                // Update angka like
+                count.textContent = data.newCount;
+
+                // Update ikon (ganti class-nya)
+                if (data.isLiked) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill', 'text-danger');
+                } else {
+                    icon.classList.remove('bi-heart-fill', 'text-danger');
+                    icon.classList.add('bi-heart');
+                }
+
+            } catch (error) {
+                console.error('Error liking comment:', error);
+            }
+        });
+    });
     </script>
 </body>
 </html>

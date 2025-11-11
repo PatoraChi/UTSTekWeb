@@ -205,10 +205,10 @@
                 @forelse ($data as $post) <a href="{{ url('/post/' . $post->id) }}" class="profile-post-item">
                         @if ($post->media->first())
                             @if ($post->media->first()->file_type == 'image')
-                                <img src="{{ asset('storage/' . $post->media->first()->file_path) }}" alt="Postingan">
+                                <img src="{{ $post->media->first()->url }}" alt="Postingan">
                             @elseif ($post->media->first()->file_type == 'video')
                                 <video muted preload="metadata">
-                                    <source src="{{ asset('storage/' . $post->media->first()->file_path) }}#t=0.5">
+                                    <source src="{{ $post->media->first()->url }}#t=0.5">
                                 </video>
                                 <i class="bi bi-play-fill"></i>
                             @endif
@@ -235,10 +235,10 @@
                         @php $media = $comment->post->media->first(); @endphp
                         @if ($media)
                             @if ($media->file_type == 'image')
-                                <img src="{{ asset('storage/' . $media->file_path) }}" class="comment-card-thumbnail" alt="Post media">
+                                <img src="{{ $media->url }}" class="comment-card-thumbnail" alt="Post media">
                             @elseif ($media->file_type == 'video')
                                 <video muted class="comment-card-thumbnail">
-                                    <source src="{{ asset('storage/' . $media->file_path) }}#t=0.5" type="video/mp4">
+                                    <source src="{{ $media->url }}#t=0.5">
                                 </video>
                             @endif
                         @else

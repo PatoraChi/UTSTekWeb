@@ -38,15 +38,18 @@ return [
             'report' => false,
         ],
         'cloudinary' => [
-            'driver'     => 'cloudinary',
-            'api_key'    => env('CLOUDINARY_API_KEY'),
-            'api_secret' => env('CLOUDINARY_API_SECRET'),
-            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-            'storage_type' => 'image', // Anda bisa ganti 'auto' jika menyimpan video juga
-            'url'        => [
-                'secure' => true, // Selalu gunakan https
-            ],
+            'driver' => 'cloudinary',
+            'cloud'  => env('CLOUDINARY_CLOUD_NAME'),
+            'key'    => env('CLOUDINARY_API_KEY'),
+            'secret' => env('CLOUDINARY_API_SECRET'),
+            'secure' => true,
         ],
+
+
+
+
+
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

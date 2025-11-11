@@ -10,10 +10,10 @@
     <div class="post-media mb-3">
         @foreach ($post->media as $media)
             @if ($media->file_type == 'image')
-                <img src="{{ asset('storage/' . $media->file_path) }}" alt="Post media" class="img-fluid rounded mb-2" style="max-height: 400px; object-fit: contain;">
+                <img src="{{ $post->media->first()->url }}" alt="Post media" class="img-fluid rounded mb-2" style="max-height: 400px; object-fit: contain;">
             @elseif ($media->file_type == 'video')
                 <video controls style="width: 100%;" class="rounded mb-2">
-                    <source src="{{ asset('storage/' . $media->file_path) }}" type="video/mp4">
+                    <source src="{{ $post->media->first()->url }}#t=0.5">
                 </video>
             @endif
         @endforeach
