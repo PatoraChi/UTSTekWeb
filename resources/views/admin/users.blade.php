@@ -2,7 +2,11 @@
 
 @section('content')
     <h3 class="mb-4">Manajemen User</h3>
-
+    <div class="mb-3">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Tambah User Baru
+        </a>
+    </div>
     <div class="table-responsive">
         <table class="table table-dark table-striped table-hover align-middle">
             <thead>
@@ -12,6 +16,7 @@
                     <th scope="col">Email</th>
                     <th scope="col">Role</th>
                     <th scope="col">Status Ban</th>
+                    <th scope="col">Aksi</th>
                     <th scope="col" style="width: 300px;">Ubah Role</th>
                 </tr>
             </thead>
@@ -72,6 +77,34 @@
                                 @else
                                     <span class="badge bg-success">Aktif</span>
                                 @endif
+                            @endif
+                        </td>
+                        <td>
+                            @php
+                                // Logika hierarki untuk menentukan apakah tombol Hapus boleh muncul
+                                // Kita akan gunakan logika yang sama untuk tombol Edit
+                                $canManage = false;
+                                if ($authUser->role == 'owner' && $user->role != 'owner') $canManage = true;
+                                if ($authUser->role == 'super_admin' && !in_array($user->role, ['super_admin', 'owner'])) $canManage = true;
+                                if ($authUser->role == 'admin' && $user->role == 'user') $canManage = true;
+                            @endphp
+
+                            @if ($canManage)
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-warning btn-sm" title="Edit Data User">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    
+                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('PERINGATAN: Ini akan menghapus user DAN SEMUA postingan, komentar, serta like miliknya. Anda yakin?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Hapus User">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            @else
+                                <span class="text-muted small">-</span>
                             @endif
                         </td>
                         <td>

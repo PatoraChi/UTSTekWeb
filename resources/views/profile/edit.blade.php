@@ -21,7 +21,7 @@
 
         <div class="text-center mb-4">
           <img 
-            src="{{ $user->profile_image ? asset('storage/' . $user->profile_image) : 'https://via.placeholder.com/100' }}" 
+            src="{{ $user->profile_image_url }}"
             alt="Foto Profil" 
             class="rounded-circle mb-3" 
             width="100" height="100"
@@ -51,13 +51,13 @@
 
   <script>
     function previewFile(input) {
-      const file = input.files[0];
-      const preview = document.getElementById('previewImage');
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => preview.src = e.target.result;
-        reader.readAsDataURL(file);
-      }
+        const file = input.files[0];
+        const preview = document.getElementById('previewImage');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => preview.src = e.target.result;
+            reader.readAsDataURL(file);
+        }
     }
   </script>
 

@@ -25,6 +25,7 @@ use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\AdminController;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Config;
+use Carbon\Carbon;
 /*
 |--------------------------------------------------------------------------
 | Halaman Utama
@@ -77,41 +78,50 @@ Route::get('/login', function () {
 
 // Proses login
 Route::post('/login', function (Request $request) {
+    
+    // 1. Validasi Input
     $request->validate([
-        'email' => 'required',
-        'password' => 'required',
+        // Gunakan nama input yang sama di form: 'email' (tapi user memasukkan email/username)
+        'email' => 'required|string', 
+        'password' => 'required|string',
     ]);
 
-    $user = User::where('email', $request->email)->first();
+    $loginInput = $request->email; // Variabel ini sekarang bisa berupa email atau username
 
+    // 2. Cari User berdasarkan Email ATAU Username
+    $user = User::where('email', $loginInput)
+                ->orWhere('name', $loginInput) // Tambahkan pencarian berdasarkan username
+                ->first();
+
+    // 3. Cek User Ditemukan
     if (!$user) {
-        return back()->with('error', 'Email tidak ditemukan.');
+        // Pesan error yang lebih umum
+        return back()->with('error', 'Email/Username atau Password salah.');
     }
 
+    // 4. Cek Password
     if (!Hash::check($request->password, $user->password)) {
-        return back()->with('error', 'Password salah.');
+        // Pesan error yang lebih umum
+        return back()->with('error', 'Email/Username atau Password salah.');
     }
 
+    // 5. Cek Status Ban (Logika ban Anda sudah cukup baik)
     if ($user->is_banned) {
-        // Cek apakah ban-nya permanen (banned_until == NULL)
         if (is_null($user->banned_until)) {
             return back()->with('error', 'Akun Anda telah diblokir secara permanen.');
         }
         
-        // Cek apakah ban-nya temporer dan masih aktif
-        // Kita butuh 'use Carbon\Carbon;' di atas file, tapi 'now()' juga bisa
         if (now()->lessThan($user->banned_until)) {
-            // Menggunakan ->diffForHumans() untuk 'dalam 3 hari lagi'
             return back()->with('error', 'Akun Anda ditangguhkan. Sisa waktu: ' . now()->diffForHumans($user->banned_until, true));
         }
         
-        // Jika ban-nya temporer dan sudah lewat, un-ban user-nya
+        // Un-ban jika waktu penangguhan sudah lewat
         $user->is_banned = false;
         $user->banned_until = null;
         $user->save();
     }
 
-    // Simpan session user (tanpa sistem Auth Laravel)
+    // 6. Simpan session user
     Session::put('user', [
         'id' => $user->id,
         'name' => $user->name,
@@ -343,5 +353,23 @@ Route::middleware('admin')->group(function () {
 
     Route::post('/admin/users/{user}/manage-ban', [AdminController::class, 'manageBan'])
         ->name('admin.users.manage_ban');
+        // 1. Rute untuk menampilkan form "tambah user"
+    Route::get('/users/create', [App\Http\Controllers\AdminController::class, 'create'])
+         ->name('admin.users.create');
+
+    // 2. Rute untuk menyimpan user baru (dari form)
+    Route::post('/users', [App\Http\Controllers\AdminController::class, 'store'])
+         ->name('admin.users.store');
+         
+    // 3. Rute untuk menghapus user
+    Route::delete('/users/{user}', [App\Http\Controllers\AdminController::class, 'destroy'])
+         ->name('admin.users.destroy');
+         // 4. Rute untuk MENAMPILKAN form edit user
+    Route::get('/admin/users/{user}/edit', [App\Http\Controllers\AdminController::class, 'edit'])
+          ->name('admin.users.edit');
+
+    // 5. Rute untuk MEMPROSES update user
+    Route::put('/admin/users/{user}/update', [App\Http\Controllers\AdminController::class, 'update'])
+         ->name('admin.users.update');
 
 });

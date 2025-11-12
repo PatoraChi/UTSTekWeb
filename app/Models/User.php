@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -137,14 +138,24 @@ class User extends Authenticatable
     protected function profileImageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->profile_image
-                // ✅ KEMBALI KE CLOUDINARY
-                // Jika user PUNYA foto profil:
-                ? Storage::disk('cloudinary')->url($this->profile_image)
+            get: function ($value, $attributes) {
+                // $attributes['profile_image'] adalah kolom 'profile_image'
+                $publicId = $attributes['profile_image'];
+                
+                // Jika user PUNYA foto profil (Public ID ada):
+                if ($publicId) {
+                    try {
+                        // Menggunakan Storage::disk('cloudinary')->url()
+                        return Storage::disk('cloudinary')->url($publicId);
+                    } catch (\Exception $e) {
+                        // Fallback jika Cloudinary API gagal (misal resource tidak ditemukan)
+                        return asset('images/default_avatar.png'); 
+                    }
+                }
                 
                 // Jika user TIDAK PUNYA foto profil:
-                // (Pastikan file ini ada di public/images/ dan ter-upload ke Git)
-                : asset('images/default_avatar.png') 
+                return asset('images/default_avatar.png'); 
+            }
         );
     }
 }
