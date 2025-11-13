@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UsersExport;
 
 class AdminController extends Controller
 {
@@ -19,12 +20,19 @@ class AdminController extends Controller
      */
     public function listUsers()
     {
+        $sessionUser = Session::get('user');
+        if (!$sessionUser) {
+            return redirect('/login');
+        }
+
+        $currentUserId = $sessionUser['id'];
+        $currentUserRole = $sessionUser['role'];
         // Ambil user yang sedang login
         $authUser = User::find(Session::get('user.id'));
         
         // Ambil semua user, KECUALI 'owner' (Owner tidak bisa dikelola)
         // Kita urutkan berdasarkan ID
-        $users = User::where('role', '!=', 'owner')
+        $users = User::where('id', '!=', $currentUserId)
                      ->orderBy('id')
                      ->get();
 
@@ -332,4 +340,53 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users.list')->with('success', 'Data untuk ' . $user->name . ' berhasil diperbarui.');
     }
+/**
+     * Helper untuk mendapatkan data user yang sudah disensor, digunakan oleh export.
+     * @param string $currentUserRole Role dari user yang sedang login
+     * @return array
+     */
+    protected function getExportData(string $currentUserRole): array
+    {
+        $users = User::all();
+        $records = [];
+        $currentUserLevel = $this->roleLevel[$currentUserRole] ?? 0;
+        
+        foreach ($users as $user) {
+            $viewedUserLevel = $this->roleLevel[$user->role] ?? 0;
+            // $isSensitive berlaku jika user yang dilihat memiliki level > user yang login
+            $isSensitive = ($viewedUserLevel > $currentUserLevel); 
+            
+            $email = $user->email;
+            $password = $user->password;
+            
+            if ($isSensitive) {
+                $email = '*** DISENSORED ***';
+                $password = '*** DISENSORED ***';
+            } 
+
+            $records[] = [
+                'ID' => $user->id,
+                'Name' => $user->name,
+                'Email' => $email,
+                'Password (Hashed)' => $password,
+                'Bio' => $user->bio ?? 'N/A',
+                'Profile Image Public ID' => $user->profile_image ?? 'N/A',
+                'Role' => $user->role,
+                'Is Banned' => $user->is_banned ? 'Yes' : 'No',
+                'Banned Until' => $user->banned_until ? $user->banned_until->toDateTimeString() : 'N/A',
+                'Created At' => $user->created_at->toDateTimeString(),
+            ];
+        }
+
+        return $records;
+    }
+
+    /**
+     * Export daftar user ke Excel, CSV, atau PDF.
+     * Menggunakan Spatie/SimpleExcel untuk Excel/CSV dan DomPDF untuk PDF.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Http\RedirectResponse
+     */
+
 }

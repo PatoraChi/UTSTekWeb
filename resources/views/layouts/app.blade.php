@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'LahIya' }}</title> 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -12,113 +13,88 @@
 <body>
 
     <div class="sidebar">
-        <h3 class="text-center mb-4">LahIya</h3>
-        <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'active' : '' }}"><i class="bi bi-house-door"></i> Home</a>
-        <a href="{{ url('/topik') }}" class="{{ request()->is('topik') ? 'active' : '' }}"><i class="bi bi-people"></i> Topik</a>
-        <a href="{{ url('/post/create') }}" class="{{ request()->is('post/create') ? 'active' : '' }}"><i class="bi bi-plus-circle"></i> Buat</a>
-        <a href="{{ url('/cari') }}" class="{{ request()->is('cari') ? 'active' : '' }}"><i class="bi bi-search"></i> Cari</a>
-        <a href="{{ url('/notifikasi') }}"><i class="bi bi-bell"></i> Notifikasi</a>
-        <a href="{{ url('/profile') }}" class="{{ request()->is('profile*') ? 'active' : '' }}"><i class="bi bi-person-circle"></i> Akun ku</a>
+        <h3 class="text-center mb-4">
+            <span class="sidebar-text">LahIya</span>
+            <i class="bi bi-layout-text-sidebar-reverse sidebar-icon-only"></i>
+        </h3>
+        
+        <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'active' : '' }}">
+            <i class="bi bi-house-door"></i> 
+            <span class="sidebar-text">Home</span>
+        </a>
+        <a href="{{ url('/topik') }}" class="{{ request()->is('topik') ? 'active' : '' }}">
+            <i class="bi bi-people"></i> 
+            <span class="sidebar-text">Topik</span>
+        </a>
+        <a href="{{ url('/post/create') }}" class="{{ request()->is('post/create') ? 'active' : '' }}">
+            <i class="bi bi-plus-circle"></i> 
+            <span class="sidebar-text">Buat</span>
+        </a>
+        <a href="{{ url('/cari') }}" class="{{ request()->is('cari') ? 'active' : '' }}">
+            <i class="bi bi-search"></i> 
+            <span class="sidebar-text">Cari</span>
+        </a>
+        <a href="{{ url('/notifikasi') }}" class="{{ request()->is('notifikasi') ? 'active' : '' }}">
+            <i class="bi bi-bell"></i> 
+            <span class="sidebar-text">Notifikasi</span>
+        </a>
+        <a href="{{ url('/profile') }}" class="{{ request()->is('profile*') ? 'active' : '' }}">
+            <i class="bi bi-person-circle"></i> 
+            <span class="sidebar-text">Akun ku</span>
+        </a>
     </div>
 
-    <div class="main-content">
+    <div class="main-wrapper">
 
-        @yield('content')
-        
-        <div>
-            <div>
-                <nav class="navbar-custom d-flex justify-content-end align-items-center px-3">
-
-                    <div class="dropdown me-2">
-                        <a href="#" class="text-white fs-4" data-bs-toggle="dropdown" aria-expanded="false" style="position: relative;">
-                            <i class="bi bi-bell"></i>
-                            @if ($unreadCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                                    <span class="visually-hidden">Notifikasi baru</span>
-                                </span>
-                            @endif
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="width: 350px;">
-                            <li><h6 class="dropdown-header">Notifikasi Terbaru</h6></li>
-                            
-                            @forelse ($recentNotifications as $notif)
-                                @php
-                                    // Logika yang sama seperti di halaman penuh
-                                    $link = url('/post/' . $notif->post_id);
-                                    $message = '';
-                                    if ($notif->type == 'comment_reply' || $notif->type == 'comment_like') {
-                                        $link .= '?highlight_comment=' . $notif->comment_id;
-                                    }
-                                    switch ($notif->type) {
-                                        case 'post_like': $message = 'menyukai postingan Anda.'; break;
-                                        case 'post_comment': $message = 'mengomentari postingan Anda.'; break;
-                                        case 'comment_like': $message = 'menyukai komentar Anda.'; break;
-                                        case 'comment_reply': $message = 'membalas komentar Anda.'; break;
-                                    }
-                                @endphp
-                            <li>
-                                <div class="dropdown-item d-flex align-items-start py-2">
-                                <a href="{{ route('profile.show.user', $notif->sender) }}">
-                                    <img src="{{ $notif->sender->profile_image_url }}" 
-                                        alt="profil" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
-                                </a>
-                                    <div style="white-space: normal; line-height: 1.3;">
-                                        <a href="{{ route('profile.show.user', $notif->sender) }}" class="text-decoration-none text-white">
-                                            <strong>{{ $notif->sender->name }}</strong>
-                                        </a>
-                                        <a href="{{ $link }}" class="text-decoration-none">
-                                            <small class="text-white-50">{{ $message }}</small>
-                                            <small class="d-block text-white-50 mt-1">{{ $notif->created_at->diffForHumans() }}</small>
-                                        </a>
-                                    </div>
-                                </div>
-                            </li>
-                            @empty
-                                <li><p class="dropdown-item text-center text-white-50 py-3">Tidak ada notifikasi.</p></li>
-                            @endforelse
-
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-center" href="{{ url('/notifikasi') }}">
-                                    Lihat Semua Notifikasi
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center text-decoration-none text-white"
-                        id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="me-2"><strong>{{ $user->name }}</strong></span>
-                            <img 
-                                src="{{ $user->profile_image_url }}"
-                                alt="profil" 
-                                class="profile-img rounded-circle"
-                                width="35" height="35"  
-                                style="object-fit: cover;">
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
-                            <li><a class="dropdown-item" href="{{ url('/profile') }}"><i class="bi bi-person me-2"></i>Profil Saya</a></li>
-                            <li><a class="dropdown-item" href="{{ url('/edit-profile') }}"><i class="bi bi-pencil-square me-2"></i>Edit Profil</a></li>
-                                @if (in_array($user->role, ['admin', 'super_admin', 'owner']))
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item text-warning" href="{{ route('admin.users.list') }}">
-                                            <i class="bi bi-shield-lock me-2"></i>Panel Admin
-                                        </a>
-                                    </li>
-                                @endif
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{{ url('/logout') }}">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                </nav>
+        <nav class="navbar-custom d-flex justify-content-end align-items-center px-3">
+            
+            <div class="dropdown me-2">
+                <a href="#" class="text-white fs-4" data-bs-toggle="dropdown" aria-expanded="false" style="position: relative;">
+                    <i class="bi bi-bell"></i>
+                    @if ($unreadCount > 0)
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                            <span class="visually-hidden">Notifikasi baru</span>
+                        </span>
+                    @endif
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="width: 350px;">
+                    <li><h6 class="dropdown-header">Notifikasi Terbaru</h6></li>
+                    @forelse ($recentNotifications as $notif)
+                        @empty
+                        <li><p class="dropdown-item text-center text-white-50 py-3">Tidak ada notifikasi.</p></li>
+                    @endforelse
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-center" href="{{ url('/notifikasi') }}">Lihat Semua Notifikasi</a></li>
+                </ul>
             </div>
+            
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none text-white"
+                   id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="profile-username me-2"><strong>{{ $user->name }}</strong></span>
+                    <img src="{{ $user->profile_image_url }}" alt="profil" 
+                         class="profile-img rounded-circle"
+                         width="35" height="35" style="object-fit: cover;">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                    <li><a class="dropdown-item" href="{{ url('/profile') }}"><i class="bi bi-person me-2"></i>Profil Saya</a></li>
+                    <li><a class="dropdown-item" href="{{ url('/edit-profile') }}"><i class="bi bi-pencil-square me-2"></i>Edit Profil</a></li>
+                    @if (in_array($user->role, ['admin', 'super_admin', 'owner']))
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-warning" href="{{ route('admin.users.list') }}"><i class="bi bi-shield-lock me-2"></i>Panel Admin</a></li>
+                    @endif
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{{ url('/logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="main-content">
+
+            <div class="feed-column">
+                @yield('content')
+            </div>
+            
             <div class="recommendation-column">
                 <h5>Rekomendasi untuk Anda</h5>
                 <hr>
@@ -137,24 +113,51 @@
                             <small class="text-white-50 d-block">Populer</small>
                         </div>
 
-                @php $isFollowing = $followingIds->contains($recUser->id); @endphp
-                    <form class="follow-form ms-auto" action="{{ route('follow.toggle', $recUser) }}" method="POST">
-                     @csrf
-                        <button type="submit" class="btn btn-sm {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }}" data-follow-button-user-id="{{ $recUser->id }}">
-                            <span data-follow-text-user-id="{{ $recUser->id }}">
-                                {{ $isFollowing ? 'Mengikuti' : 'Ikuti' }}
-                            </span>
-                        </button>
-                    </form>
+                        @php $isFollowing = $followingIds->contains($recUser->id); @endphp
+                        <form class="follow-form ms-auto" action="{{ route('follow.toggle', $recUser) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-sm {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }}" data-follow-button-user-id="{{ $recUser->id }}">
+                                <span data-follow-text-user-id="{{ $recUser->id }}">
+                                    {{ $isFollowing ? 'Mengikuti' : 'Ikuti' }}
+                                </span>
+                            </button>
+                        </form>
                     </div>
                 @empty
                     <p class="text-white-50">Tidak ada rekomendasi user.</p>
                 @endforelse
-                
-            </div> 
-        </div> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-      
+                </div> 
+        </div> </div> <nav class="bottom-nav">
+        <a href="{{ url('/') }}" class="bottom-nav-link {{ request()->is('/') ? 'active' : '' }}">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+        
+        <a href="{{ url('/topik') }}" class="bottom-nav-link {{ request()->is('topik') ? 'active' : '' }}">
+            <i class="bi bi-people"></i>
+            <span>Topik</span>
+        </a>
 
+        <a href="{{ url('/cari') }}" class="bottom-nav-link {{ request()->is('cari') ? 'active' : '' }}">
+            <i class="bi bi-search"></i>
+            <span>Cari</span>
+        </a>
+        <a href="{{ url('/post/create') }}" class="bottom-nav-link {{ request()->is('post/create') ? 'active' : '' }}">
+            <i class="bi bi-plus-square-fill"></i>
+            <span>Buat</span>
+        </a>
+        <a href="{{ url('/notifikasi') }}" class="bottom-nav-link {{ request()->is('notifikasi') ? 'active' : '' }}">
+            <i class="bi bi-bell-fill"></i>
+            <span>Notifikasi</span>
+        </a>
+        <a href="{{ url('/profile') }}" class="bottom-nav-link {{ request()->is('profile*') ? 'active' : '' }}">
+            <i class="bi bi-person-circle"></i>
+            <span>Akun</span>
+        </a>
+    </nav>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Ambil CSRF token dari meta tag yang kita buat
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;

@@ -39,7 +39,19 @@
                             <img src="{{ $user->profile_image_url }}" alt="{{ $user->name }}" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
                             {{ $user->name }}
                         </td>
-                        <td>{{ $user->email }}</td>
+                        <td>
+                            @php
+                                $canShowEmail = true;
+                                if ($authUser->role == 'admin' && in_array($user->role, ['admin','super_admin' , 'owner'])) $canShowEmail = false;
+                                if ($authUser->role == 'super_admin' && in_array($user->role, ['super_admin' , 'owner'])) $canShowEmail = false;
+                                if ($authUser->role == 'owner' && in_array($user->role, ['owner'])) $canShowEmail = false;
+                            @endphp    
+                            @if ($canShowEmail)
+                                {{ $user->email }}
+                            @else
+                                <span class="text-white small">-</span>
+                            @endif
+                        </td>
                         <td>
                             <span class="badge ...">{{ $user->role }}</span>
                         </td>
@@ -104,7 +116,7 @@
                                     </form>
                                 </div>
                             @else
-                                <span class="text-muted small">-</span>
+                                <span class="text-white small">-</span>
                             @endif
                         </td>
                         <td>
@@ -128,7 +140,7 @@
                                     <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
                                 </form>
                             @else
-                                <small class="text-muted">Tidak dapat diubah</small>
+                                <small class="text-while">Tidak dapat diubah</small>
                             @endif
                         </td>
                     </tr>
