@@ -59,12 +59,49 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="width: 350px;">
                     <li><h6 class="dropdown-header">Notifikasi Terbaru</h6></li>
+                    
                     @forelse ($recentNotifications as $notif)
-                        @empty
+                        @php
+                            // Logika yang sama seperti di halaman penuh
+                            $link = url('/post/' . $notif->post_id);
+                            $message = '';
+                            if ($notif->type == 'comment_reply' || $notif->type == 'comment_like') {
+                                $link .= '?highlight_comment=' . $notif->comment_id;
+                            }
+                            switch ($notif->type) {
+                                case 'post_like': $message = 'menyukai postingan Anda.'; break;
+                                case 'post_comment': $message = 'mengomentari postingan Anda.'; break;
+                                case 'comment_like': $message = 'menyukai komentar Anda.'; break;
+                                case 'comment_reply': $message = 'membalas komentar Anda.'; break;
+                            }
+                        @endphp
+                    <li>
+                        <div class="dropdown-item d-flex align-items-start py-2">
+                            <a href="{{ route('profile.show.user', $notif->sender) }}">
+                                <img src="{{ $notif->sender->profile_image_url }}" 
+                                    alt="profil" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
+                            </a>
+                            <div style="white-space: normal; line-height: 1.3;">
+                                <a href="{{ route('profile.show.user', $notif->sender) }}" class="text-decoration-none text-white">
+                                    <strong>{{ $notif->sender->name }}</strong>
+                                </a>
+                                <a href="{{ $link }}" class="text-decoration-none">
+                                    <small class="text-white-50">{{ $message }}</small>
+                                    <small class="d-block text-white-50 mt-1">{{ $notif->created_at->diffForHumans() }}</small>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    @empty
                         <li><p class="dropdown-item text-center text-white-50 py-3">Tidak ada notifikasi.</p></li>
                     @endforelse
+
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-center" href="{{ url('/notifikasi') }}">Lihat Semua Notifikasi</a></li>
+                    <li>
+                        <a class="dropdown-item text-center" href="{{ url('/notifikasi') }}">
+                            Lihat Semua Notifikasi
+                        </a>
+                    </li>
                 </ul>
             </div>
             

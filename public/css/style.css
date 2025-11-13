@@ -9,7 +9,8 @@ body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    /* overflow: hidden; <-- INI DIHAPUS agar bisa scroll */
+    /* UBAH: Beri ruang untuk navbar bawah di mobile (default) */
+    padding-bottom: 60px; 
 }
 
 /*
@@ -18,17 +19,18 @@ body {
 |--------------------------------------------------------------------------
 */
 .sidebar {
+    /* UBAH: Sembunyi by default (mobile-first) */
+    display: none; 
     height: 100vh;
-    width: 220px; /* Lebar default desktop */
+    width: 220px; /* Lebar saat nanti muncul di desktop */
     position: fixed;
     top: 0;
     left: 0;
     background-color: #0d0f10;
     padding-top: 1rem;
-    display: flex;
     flex-direction: column;
     border-right: 1px solid #2c2f33;
-    transition: width 0.3s ease; /* Transisi untuk mengecil */
+    transition: width 0.3s ease;
     z-index: 1001;
 }
 
@@ -38,10 +40,9 @@ body {
     margin-bottom: 25px;
 }
 
-/* Ikon 'L' untuk mode tablet, disembunyikan di desktop */
+/* Ikon 'L' disembunyikan (kita tidak pakai mode tablet lagi) */
 .sidebar .sidebar-icon-only {
-    display: none;
-    font-size: 1.8rem;
+    display: none; 
 }
 
 .sidebar a {
@@ -54,8 +55,8 @@ body {
     margin: 3px 8px;
     transition: all 0.2s ease;
     font-size: 15px;
-    white-space: nowrap; /* Mencegah teks turun saat transisi */
-    overflow: hidden; /* Sembunyikan teks saat mengecil */
+    white-space: nowrap; 
+    overflow: hidden; 
 }
 
 .sidebar a i {
@@ -76,21 +77,26 @@ body {
 |--------------------------------------------------------------------------
 */
 .main-wrapper {
-    margin-left: 220px; /* Lebar default (sama dgn sidebar) */
-    width: calc(100% - 220px);
+    /* UBAH: Full width by default (mobile-first) */
+    margin-left: 0; 
+    width: 100%;
     height: 100vh;
     display: flex;
     flex-direction: column;
     transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
-/* Navbar Atas */
+/* Navbar Atas (Selalu tampil di semua ukuran) */
 .navbar-custom {
-    height: 60px; /* Tinggi pasti */
+    height: 60px; 
     background-color: #121212;
     border-bottom: 1px solid #2c2f33;
-    flex-shrink: 0; /* Jangan biarkan navbar mengecil */
+    flex-shrink: 0; 
     z-index: 1000;
+    /* UBAH: Di mobile, username profil hilang */
+    .profile-username {
+        display: none;
+    }
 }
 
 .profile-img {
@@ -109,30 +115,32 @@ body {
     display: flex;
     flex-direction: row;
     width: 100%;
-    flex-grow: 1; /* Mengisi sisa tinggi layar */
-    height: calc(100vh - 60px); /* Tinggi 100% dikurangi navbar atas */
+    flex-grow: 1;
+    height: calc(100vh - 60px); 
     overflow: hidden;
 }
 
 /* Kolom Kiri (Feed) */
 .feed-column {
-    flex: 1; /* Ambil sisa ruang */
-    overflow-y: auto; /* HANYA kolom ini yang bisa di-scroll */
+    flex: 1;
+    overflow-y: auto;
     padding: 20px;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
 }
 .feed-column::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
+    display: none;
 }
 
 /* Kolom Kanan (Rekomendasi) */
 .recommendation-column {
-    width: 300px; /* Lebar kolom kanan */
+    /* UBAH: Sembunyi by default (mobile-first) */
+    display: none; 
+    width: 300px; /* Lebar saat nanti muncul di desktop */
     padding: 20px;
     border-left: 1px solid #2c2f33;
-    background-color: #0d0f10; /* Ganti dari transparan */
-    overflow-y: auto; /* Buat kolom ini bisa scroll juga */
-    flex-shrink: 0; /* Jangan biarkan kolom ini mengecil */
+    background-color: #0d0f10; 
+    overflow-y: auto; 
+    flex-shrink: 0;
     transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
     scrollbar-width: none;
 }
@@ -142,11 +150,11 @@ body {
 
 /*
 |--------------------------------------------------------------------------
-| 5. CSS Kartu Postingan (Milik Kamu, Disesuaikan Sedikit)
+| 5. CSS Kartu Postingan (Tidak Berubah)
 |--------------------------------------------------------------------------
 */
 .post-card {
-    background-color: #1a1a1a; /* Sedikit lebih terang dari #121212 */
+    background-color: #1a1a1a;
     border: 1px solid #2c2f33;
     border-radius: 8px;
     margin-bottom: 25px;
@@ -171,7 +179,7 @@ body {
     height: auto;
     max-height: 600px;
     object-fit: contain;
-    background-color: #000; /* Latar belakang media jadi hitam pekat */
+    background-color: #000;
     border-top: 1px solid #2c2f33;
     border-bottom: 1px solid #2c2f33;
 }
@@ -202,15 +210,15 @@ body {
 |--------------------------------------------------------------------------
 */
 .bottom-nav {
-    display: none; /* Sembunyi di desktop/tablet */
+    /* UBAH: Muncul by default (mobile-first) */
+    display: flex; 
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60px; /* Tinggi navbar bawah */
+    height: 60px; 
     background-color: #0d0f10;
     border-top: 1px solid #2c2f33;
-    display: flex;
     justify-content: space-around;
     align-items: center;
     z-index: 1005;
@@ -222,17 +230,18 @@ body {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #ddd; /* Warna ikon non-aktif */
-    font-size: 0.75rem; /* Ukuran teks di bawah ikon */
+    color: #ddd; 
+    font-size: 0.75rem; 
+    flex: 1; /* Agar setiap link lebarnya sama */
+    height: 100%;
 }
 
 .bottom-nav-link i {
-    font-size: 1.25rem; /* Ukuran ikon */
+    font-size: 1.25rem; 
 }
 
-/* Warna link aktif di navbar bawah */
 .bottom-nav-link.active {
-    color: #fff; /* Warna ikon aktif */
+    color: #fff; 
     font-weight: bold;
 }
 
@@ -242,93 +251,52 @@ body {
 |--------------------------------------------------------------------------
 */
 
-/* === TAMPILAN TABLET (<= 992px) === */
-@media (max-width: 992px) {
-    /* 1. Sembunyikan kolom rekomendasi */
-    .recommendation-column {
-        width: 0;
-        padding: 0;
-        border-left: none;
-        opacity: 0;
-    }
+/* * HAPUS SEMUA @media (max-width: ...) YANG LAMA
+ * KITA GANTI DENGAN SATU @media (min-width: ...)
+ */
 
-    /* 2. Kecilkan sidebar jadi icon-only */
+/* === TAMPILAN DESKTOP (Layar besar) === */
+/* Kita pakai 992px sebagai batas (breakpoint 'lg' Bootstrap) */
+@media (min-width: 992px) {
+    
+    /* 1. Tampilkan Sidebar Kiri */
     .sidebar {
-        width: 70px; /* Lebar baru (hanya ikon) */
-    }
-    
-    /* 3. Sembunyikan semua teks di sidebar */
-    .sidebar .sidebar-text {
-        display: none;
-    }
-    
-    /* 4. Tampilkan ikon 'L' sbg logo */
-    .sidebar h3 .sidebar-icon-only {
-        display: inline-block;
-    }
-    .sidebar h3 {
-        padding: 0;
+        display: flex;
     }
 
-    /* 5. Atur ikon dan link jadi di tengah */
-    .sidebar a {
-        justify-content: center;
-        padding: 12px 10px;
-    }
-    .sidebar a i {
-        margin-right: 0;
-        font-size: 1.4rem;
-    }
-
-    /* 6. Geser konten utama */
+    /* 2. Geser konten utama */
     .main-wrapper {
-        margin-left: 70px;
-        width: calc(100% - 70px);
+        margin-left: 220px; /* Lebar sidebar */
+        width: calc(100% - 220px);
+    }
+
+    /* 3. Tampilkan Sidebar Kanan (Rekomendasi) */
+    .recommendation-column {
+        display: block;
     }
     
-    /* 7. Sembunyikan username di profil atas */
-    .profile-username {
+    /* 4. Tampilkan username di profil atas */
+    .navbar-custom .profile-username {
+        display: inline; /* atau 'block', sesuai kebutuhan */
+    }
+
+    /* 5. Sembunyikan Navbar Bawah */
+    .bottom-nav {
         display: none;
+    }
+
+    /* 6. Hapus padding bawah dari body */
+    body {
+        padding-bottom: 0;
     }
 }
 
+/* Opsional: Tampilan Desktop Lebih Lebar (jika kamu mau 3 kolom) */
+/* Jika kamu mau 3 kolom, kita bisa atur di sini */
+/* Tapi logika di atas sudah benar untuk 2/3 kolom di desktop */
 
-/* === TAMPILAN HP (<= 767.98px) === */
-@media (max-width: 767.98px) {
-    /* 1. Sembunyikan sidebar kiri (diganti nav bawah) */
-    .sidebar {
-        display: none;
-    }
-
-    /* 2. Sembunyikan navbar atas (diganti nav bawah) */
-    .navbar-custom {
-        display: none;
-    }
-    
-    /* 3. Tampilkan navbar bawah */
-    .bottom-nav {
-        display: flex;
-    }
-    
-    /* 4. Buat konten utama jadi full-width */
-    .main-wrapper {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    /* 5. Sembunyikan kolom rekomendasi (tegas) */
-    .recommendation-column {
-        display: none;
-    }
-    
-    /* 6. Atur ulang tinggi .main-content */
-    .main-content {
-        height: 100vh; /* Tinggi penuh (navbar atas hilang) */
-        /* Beri padding di bawah agar scroll mentok tidak tertutup nav */
-        padding-bottom: 60px; /* Setara tinggi .bottom-nav */
-    }
-    
-    /* 7. Kecilkan padding feed di HP */
+/* Perbaikan kecil untuk padding feed di HP */
+@media (max-width: 991.98px) {
     .feed-column {
         padding: 10px;
     }
